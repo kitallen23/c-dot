@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect } from "react";
+import { PropsWithChildren } from "react";
 import { Link } from "react-router-dom";
 import { Box, Container } from "@radix-ui/themes";
 import { useSelector } from "react-redux";
@@ -19,9 +19,6 @@ const Header = () => {
     const brandAccent = useSelector(
         (state: RootState) => state.theme.colors.brandAccent
     );
-    useEffect(() => {
-        console.log(`brandAccent: `, brandAccent);
-    }, [brandAccent]);
 
     return (
         <div className={header}>

@@ -82,6 +82,10 @@ export function generateColorScales(hexColor: string): {
 } {
     // Normalize hex color to lowercase for comparison
     const normalizedHex = hexColor.toLowerCase();
+    const color = chroma(hexColor);
+    const hue = color.get("hsl.h") || 0;
+    const saturation = color.get("hsl.s");
+    const lightness = color.get("hsl.l");
 
     // Special case for white (#FFFFFF) in dark mode
     const whiteInDarkMode: ColorScaleSet = {
@@ -159,157 +163,176 @@ export function generateColorScales(hexColor: string): {
         },
     };
 
-    // Default light theme values (for colors other than black)
-    const lightBase: ColorScale = {
-        1: "#fcfcfd",
-        2: "#f9f9fb",
-        3: "#f3f3f6",
-        4: "#ececf1",
-        5: "#e4e4e9",
-        6: "#dcdce3",
-        7: "#d0d0d9",
-        8: "#c1c1cd",
-        9: hexColor, // Original color
-        10: "#8e8ea0",
-        11: "#6f6f87",
-        12: "#2c2c3c",
-    };
-
-    // Default dark theme values (for colors other than white)
-    const darkBase: ColorScale = {
-        1: "#111113",
-        2: "#19191b",
-        3: "#222325",
-        4: "#292a2e",
-        5: "#303136",
-        6: "#393a40",
-        7: "#46484f",
-        8: "#5f606a",
-        9: hexColor, // Original color
-        10: "#f5f6f8",
-        11: "#b2b3bd",
-        12: "#eeeef0",
-    };
-
-    // Default alpha values
-    const lightAlpha: ColorScale = {
-        1: `${hexColor}03`,
-        2: `${hexColor}06`,
-        3: `${hexColor}0a`,
-        4: `${hexColor}10`,
-        5: `${hexColor}18`,
-        6: `${hexColor}26`,
-        7: `${hexColor}40`,
-        8: `${hexColor}5e`,
-        9: hexColor,
-        10: `${hexColor}c8`,
-        11: `${hexColor}e0`,
-        12: `${hexColor}f0`,
-    };
-
-    const darkAlpha: ColorScale = {
-        1: `${hexColor}03`,
-        2: `${hexColor}0b`,
-        3: `${hexColor}16`,
-        4: `${hexColor}20`,
-        5: `${hexColor}28`,
-        6: `${hexColor}33`,
-        7: `${hexColor}43`,
-        8: `${hexColor}60`,
-        9: hexColor,
-        10: `${hexColor}f8`,
-        11: `${hexColor}b9`,
-        12: `${hexColor}ef`,
-    };
-
-    // Default utility colors
-    const lightUtility = {
-        contrast: "#ffffff",
-        surface: "#f9f9fb80",
-        indicator: "#000000",
-        track: "#e4e4e9",
-    };
-
-    const darkUtility = {
-        contrast: "#311921",
-        surface: "#21212580",
-        indicator: "#fff",
-        track: "#fff",
-    };
-
-    // Handle special cases
+    // Special cases for white and black
     if (normalizedHex === "#ffffff") {
-        // Use exact values for white in dark mode
         return {
             light: {
-                base: lightBase,
-                alpha: lightAlpha,
-                utility: lightUtility,
+                base: {
+                    1: "#fcfcfd",
+                    2: "#f9f9fb",
+                    3: "#f3f3f6",
+                    4: "#ececf1",
+                    5: "#e4e4e9",
+                    6: "#dcdce3",
+                    7: "#d0d0d9",
+                    8: "#c1c1cd",
+                    9: "#ffffff",
+                    10: "#8e8ea0",
+                    11: "#6f6f87",
+                    12: "#2c2c3c",
+                },
+                alpha: {
+                    1: "#ffffff03",
+                    2: "#ffffff06",
+                    3: "#ffffff0a",
+                    4: "#ffffff10",
+                    5: "#ffffff18",
+                    6: "#ffffff26",
+                    7: "#ffffff40",
+                    8: "#ffffff5e",
+                    9: "#ffffff",
+                    10: "#ffffffc8",
+                    11: "#ffffffe0",
+                    12: "#fffffff0",
+                },
+                utility: {
+                    contrast: "#ffffff",
+                    surface: "#f9f9fb80",
+                    indicator: "#000000",
+                    track: "#e4e4e9",
+                },
             },
             dark: whiteInDarkMode,
         };
     } else if (normalizedHex === "#111111") {
-        // Use exact values for black in light mode
         return {
             light: blackInLightMode,
             dark: {
-                base: darkBase,
-                alpha: darkAlpha,
-                utility: darkUtility,
+                base: {
+                    1: "#111113",
+                    2: "#19191b",
+                    3: "#222325",
+                    4: "#292a2e",
+                    5: "#303136",
+                    6: "#393a40",
+                    7: "#46484f",
+                    8: "#5f606a",
+                    9: "#111111",
+                    10: "#f5f6f8",
+                    11: "#b2b3bd",
+                    12: "#eeeef0",
+                },
+                alpha: {
+                    1: "#11111103",
+                    2: "#1111110b",
+                    3: "#11111116",
+                    4: "#11111120",
+                    5: "#11111128",
+                    6: "#11111133",
+                    7: "#11111143",
+                    8: "#11111160",
+                    9: "#111111",
+                    10: "#111111f8",
+                    11: "#111111b9",
+                    12: "#111111ef",
+                },
+                utility: {
+                    contrast: "#311921",
+                    surface: "#21212580",
+                    indicator: "#fff",
+                    track: "#fff",
+                },
             },
         };
     }
 
-    // For other colors, adjust the scales based on the color's properties
-    const color = chroma(hexColor);
-    const hue = color.get("hsl.h") || 0;
-    const saturation = color.get("hsl.s");
+    // Improved dark mode scale generation
+    const darkBase: ColorScale = {
+        1: chroma.hsl(hue, Math.min(saturation * 0.25, 0.12), 0.09).hex(),
+        2: chroma.hsl(hue, Math.min(saturation * 0.3, 0.14), 0.11).hex(),
+        3: chroma.hsl(hue, Math.min(saturation * 0.4, 0.18), 0.14).hex(),
+        4: chroma.hsl(hue, Math.min(saturation * 0.5, 0.22), 0.17).hex(),
+        5: chroma.hsl(hue, Math.min(saturation * 0.6, 0.24), 0.21).hex(),
+        6: chroma.hsl(hue, Math.min(saturation * 0.65, 0.26), 0.25).hex(),
+        7: chroma.hsl(hue, Math.min(saturation * 0.7, 0.28), 0.31).hex(),
+        8: chroma.hsl(hue, Math.min(saturation * 0.8, 0.32), 0.39).hex(),
+        9: hexColor, // Original color
+        10: chroma
+            .hsl(hue, Math.min(saturation * 0.85, 0.9), lightness * 0.93)
+            .hex(),
+        11: chroma.hsl(hue, Math.min(saturation * 0.9, 0.9), 0.78).hex(),
+        12: chroma.hsl(hue, Math.min(saturation * 0.3, 0.5), 0.9).hex(),
+    };
 
-    // Only modify the scales if the color has significant saturation
-    if (saturation > 0.05) {
-        // Adjust the dark scale with the color's hue
-        for (let i = 1; i <= 8; i++) {
-            // Keep the same lightness but apply the hue with reduced saturation
-            const baseLightness = chroma(darkBase[i]).get("hsl.l");
-            darkBase[i] = chroma
-                .hsl(hue, Math.min(saturation * (i / 16), 0.2), baseLightness)
-                .hex();
-        }
+    // Improved light mode scale generation
+    const lightBase: ColorScale = {
+        1: chroma.hsl(hue, Math.min(saturation * 0.04, 0.02), 0.99).hex(),
+        2: chroma.hsl(hue, Math.min(saturation * 0.08, 0.04), 0.98).hex(),
+        3: chroma.hsl(hue, Math.min(saturation * 0.12, 0.06), 0.95).hex(),
+        4: chroma.hsl(hue, Math.min(saturation * 0.16, 0.08), 0.92).hex(),
+        5: chroma.hsl(hue, Math.min(saturation * 0.24, 0.1), 0.89).hex(),
+        6: chroma.hsl(hue, Math.min(saturation * 0.32, 0.12), 0.85).hex(),
+        7: chroma.hsl(hue, Math.min(saturation * 0.44, 0.16), 0.78).hex(),
+        8: chroma.hsl(hue, Math.min(saturation * 0.65, 0.24), 0.67).hex(),
+        9: hexColor, // Original color
+        10: chroma
+            .hsl(hue, Math.min(saturation * 0.85, 0.8), lightness * 0.9)
+            .hex(),
+        11: chroma.hsl(hue, Math.min(saturation * 1.1, 1), 0.62).hex(),
+        12: chroma.hsl(hue, Math.min(saturation * 0.8, 0.7), 0.22).hex(),
+    };
 
-        // Steps 10-12 in dark mode
-        darkBase[10] = chroma
-            .hsl(hue, Math.min(saturation * 0.3, 0.3), 0.93)
-            .hex();
-        darkBase[11] = chroma
-            .hsl(hue, Math.min(saturation * 0.5, 0.4), 0.75)
-            .hex();
-        darkBase[12] = chroma
-            .hsl(hue, Math.min(saturation * 0.2, 0.2), 0.9)
-            .hex();
+    // Improved alpha scales
+    const darkAlpha: ColorScale = {
+        1: `${hexColor}07`,
+        2: `${hexColor}13`,
+        3: `${hexColor}2b`,
+        4: `${hexColor}40`,
+        5: `${hexColor}4e`,
+        6: `${hexColor}5d`,
+        7: `${hexColor}75`,
+        8: `${hexColor}9d`,
+        9: hexColor,
+        10: `${hexColor}ba`,
+        11: `${hexColor}fc`,
+        12: `${hexColor}f8`,
+    };
 
-        // Adjust the light scale with the color's hue
-        for (let i = 1; i <= 8; i++) {
-            const baseLightness = chroma(lightBase[i]).get("hsl.l");
-            lightBase[i] = chroma
-                .hsl(hue, Math.min(saturation * (i / 20), 0.15), baseLightness)
-                .hex();
-        }
+    const lightAlpha: ColorScale = {
+        1: `${hexColor}05`,
+        2: `${hexColor}0a`,
+        3: `${hexColor}14`,
+        4: `${hexColor}1d`,
+        5: `${hexColor}2b`,
+        6: `${hexColor}38`,
+        7: `${hexColor}4f`,
+        8: `${hexColor}7e`,
+        9: hexColor,
+        10: `${hexColor}cc`,
+        11: `${hexColor}eb`,
+        12: `${hexColor}f5`,
+    };
 
-        // Steps 10-12 in light mode
-        lightBase[10] = chroma
-            .hsl(hue, Math.min(saturation * 0.4, 0.5), 0.6)
-            .hex();
-        lightBase[11] = chroma
-            .hsl(hue, Math.min(saturation * 0.5, 0.6), 0.45)
-            .hex();
-        lightBase[12] = chroma
-            .hsl(hue, Math.min(saturation * 0.6, 0.7), 0.22)
-            .hex();
+    // Improved utility colors
+    const darkUtility = {
+        contrast: "#fff",
+        surface: chroma
+            .hsl(hue, Math.min(saturation * 0.5, 0.2), 0.12)
+            .alpha(0.5)
+            .hex(),
+        indicator: hexColor,
+        track: hexColor,
+    };
 
-        // Adjust utility colors based on hue
-        darkUtility.contrast = chroma.hsl((hue + 30) % 360, 0.3, 0.88).hex();
-        lightUtility.contrast = chroma.hsl((hue + 180) % 360, 0.3, 0.12).hex();
-    }
+    const lightUtility = {
+        contrast: "#fff",
+        surface: chroma
+            .hsl(hue, Math.min(saturation * 0.1, 0.05), 0.97)
+            .alpha(0.5)
+            .hex(),
+        indicator: hexColor,
+        track: chroma.hsl(hue, Math.min(saturation * 0.2, 0.1), 0.89).hex(),
+    };
 
     return {
         light: {
@@ -326,4 +349,4 @@ export function generateColorScales(hexColor: string): {
 }
 
 // TODO: Remove me
-console.log("### Color test: \n", generateColorScales("#FFFFFF"));
+// console.log("### Color test: \n", generateColorScales("#FFFFFF"));
