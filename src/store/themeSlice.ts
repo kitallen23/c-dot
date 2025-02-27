@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ThemeState } from "../types/theme";
+import { isBrandSafe } from "@/utils/colorUtils";
 
 const initialState: ThemeState = {
     mode: "dark",
@@ -26,14 +27,16 @@ const themeSlice = createSlice({
             // You might want to update colors based on mode here
         },
         setSelectedColor: (state, action: PayloadAction<string>) => {
-            // TODO: Calculate if hex is brand safe
+            const hex = action.payload;
+            const isSafe = isBrandSafe(hex, state.colors.background);
+
             state.colors.selected = {
-                hex: action.payload,
+                hex,
                 isBrandSafe: true,
             };
 
             // Update brandAccent based on isBrandSafe
-            state.colors.brandAccent = action.payload;
+            state.colors.brandAccent = isSafe ? hex : state.colors.brandAccent;
         },
         updateCustomPalette: (state, action: PayloadAction<string[]>) => {
             state.customPalette = action.payload;

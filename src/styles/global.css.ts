@@ -43,10 +43,10 @@ globalStyle("h1", {
     lineHeight: 1.1,
 });
 
-globalStyle(".radix-themes", {
-    vars: {
-        "--brand-accent": "#ffffff",
-        "--gray-9": "var(--brand-accent)",
-        "--gray-a9": "var(--brand-accent)",
-    },
-});
+// globalStyle(".radix-themes", {
+//     vars: {
+//         "--brand-accent": "#ffffff",
+//         "--gray-9": "var(--brand-accent)",
+//         "--gray-a9": "var(--brand-accent)",
+//     },
+// });
