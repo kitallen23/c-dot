@@ -14,6 +14,7 @@ export const header = style({
     left: 0,
     width: "100%",
     height: topbarHeightVar,
+    background: "var(--gray-2)",
 });
 
 export const headerContent = style({
@@ -22,6 +23,14 @@ export const headerContent = style({
 globalStyle(`${headerContent} .rt-ContainerInner`, {
     display: "flex",
     height: "100%",
+    justifyContent: "space-between",
+});
+
+export const right = style({
+    display: "flex",
+    gap: "1em",
+    alignItems: "center",
+    justifyContent: "flex-end",
 });
 
 export const logoLink = style({

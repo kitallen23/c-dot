@@ -35,7 +35,6 @@ globalStyle("a:hover", {
 
 globalStyle("body", {
     margin: 0,
-    // marginTop: topbarHeightVar,
 });
 
 globalStyle("h1", {
@@ -44,9 +43,9 @@ globalStyle("h1", {
 });
 
 // globalStyle(".radix-themes", {
-//     vars: {
-//         "--brand-accent": "#ffffff",
-//         "--gray-9": "var(--brand-accent)",
-//         "--gray-a9": "var(--brand-accent)",
-//     },
+//     background: "var(--gray-1)",
 // });
+
+globalStyle(".text-muted", {
+    color: "var(--gray-11)",
+});

@@ -48,16 +48,14 @@ function ColorPage() {
     ];
 
     return (
-        <Container size="4">
+        <Container size="4" py="8">
             <TextField.Root
                 placeholder="Enter a color..."
                 value={inputHex}
                 onChange={handleChange}
                 type="text"
             />
-            <div
-                style={{ background: "#111", padding: "20px", color: "white" }}
-            >
+            <div style={{ padding: "20px" }}>
                 <div
                     style={{
                         display: "flex",
@@ -95,6 +93,22 @@ function ColorPage() {
                             key={step}
                             style={{
                                 backgroundColor: `var(--red-${step})`,
+                                height: "60px",
+                                flex: 1,
+                                borderRadius: "4px",
+                            }}
+                        />
+                    ))}
+                </div>
+
+                <div
+                    style={{ display: "flex", gap: "4px", marginBottom: "4px" }}
+                >
+                    {steps.map(step => (
+                        <div
+                            key={step}
+                            style={{
+                                backgroundColor: `var(--red-a${step})`,
                                 height: "60px",
                                 flex: 1,
                                 borderRadius: "4px",

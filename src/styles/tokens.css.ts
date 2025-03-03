@@ -7,4 +7,4 @@ export const durations = {
 export const lineHeight = {
     default: "var(--line-height-3)",
 };
-export const topbarHeight = 56;
+export const topbarHeight = 46;

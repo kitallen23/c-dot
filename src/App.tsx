@@ -23,7 +23,12 @@ function App() {
             <Helmet>
                 <title>C.</title>
             </Helmet>
-            <Theme appearance={mode} scaling="100%" accentColor="red">
+            <Theme
+                appearance={mode}
+                grayColor="gray"
+                scaling="100%"
+                accentColor="red"
+            >
                 <Layout>
                     <Outlet />
                 </Layout>
