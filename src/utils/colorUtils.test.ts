@@ -1,4 +1,9 @@
-import { normalizeHexColor, isValidHexColor } from "@/utils/colorUtils";
+import {
+    normalizeHexColor,
+    isValidHexColor,
+    isBrandSafe,
+} from "@/utils/colorUtils";
+import { BACKGROUNDS } from "@/utils/constants";
 import { describe, expect, it } from "vitest";
 
 describe("isValidHexColor", () => {
@@ -81,5 +86,33 @@ describe("normalizeHexColor", () => {
         expect(() => normalizeHexColor("abc")).toThrow(
             "Invalid hex color format"
         );
+    });
+});
+
+describe("isBrandSafe", () => {
+    // High contrast combinations (should pass)
+    it("should return true for high contrast combinations", () => {
+        expect(isBrandSafe("#000000", "#FFFFFF")).toBe(true); // Black on white
+        expect(isBrandSafe("#FFFFFF", "#000000")).toBe(true); // White on black
+        expect(isBrandSafe("#FF0000", "#FFFFFF")).toBe(true); // Red on white
+        expect(isBrandSafe("#0000FF", "#FFFFFF")).toBe(true); // Blue on white
+    });
+
+    // Low contrast combinations (should fail)
+    it("should return false for low contrast combinations", () => {
+        expect(isBrandSafe("#777777", "#888888")).toBe(false); // Similar grays
+        expect(isBrandSafe("#FFFF00", "#FFFFFF")).toBe(false); // Yellow on white
+        expect(isBrandSafe("#00FFFF", "#FFFFFF")).toBe(false); // Cyan on white
+        expect(isBrandSafe("#336699", "#334455")).toBe(false); // Similar dark colors
+    });
+
+    // Edge cases around the threshold (3:1 contrast ratio)
+    it("should correctly handle edge cases around the contrast threshold on black / white backgrounds", () => {
+        // These examples are approximately at the 3:1 threshold
+        expect(isBrandSafe("#8A8A8A", BACKGROUNDS.light)).toBe(true); // Just above threshold on white
+        expect(isBrandSafe("#9A9A9A", BACKGROUNDS.light)).toBe(false); // Just below threshold on white
+
+        expect(isBrandSafe("#5F606A", BACKGROUNDS.dark)).toBe(true); // Just above threshold on black
+        expect(isBrandSafe("#5C5C5C", BACKGROUNDS.dark)).toBe(false); // Just below threshold on black
     });
 });
