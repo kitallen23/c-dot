@@ -12,6 +12,9 @@ function ColorPage() {
     const brandAccent = useSelector(
         (state: RootState) => state.theme.colors.brandAccent
     );
+    const accentName = useSelector(
+        (state: RootState) => state.theme.colors.accentName
+    );
 
     const [inputHex, setInputHex] = useState(brandAccent);
 
@@ -92,7 +95,7 @@ function ColorPage() {
                         <div
                             key={step}
                             style={{
-                                backgroundColor: `var(--red-${step})`,
+                                backgroundColor: `var(--${accentName}-${step})`,
                                 height: "60px",
                                 flex: 1,
                                 borderRadius: "4px",
@@ -108,7 +111,7 @@ function ColorPage() {
                         <div
                             key={step}
                             style={{
-                                backgroundColor: `var(--red-a${step})`,
+                                backgroundColor: `var(--${accentName}-a${step})`,
                                 height: "60px",
                                 flex: 1,
                                 borderRadius: "4px",
