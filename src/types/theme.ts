@@ -1,3 +1,5 @@
+import { ColorScaleSet } from "@/utils/radixColors";
+
 export interface ColorScale {
     [key: number]: string;
     1: string;
@@ -13,18 +15,6 @@ export interface ColorScale {
     11: string;
     12: string;
 }
-export interface ColorScaleSet {
-    base: ColorScale;
-    alpha: ColorScale;
-    utility: {
-        contrast: string;
-        surface: string;
-        indicator: string;
-        track: string;
-        background: string;
-    };
-}
-
 export interface ColorMetadata {
     hex: string;
     isBrandSafe: boolean; // Pre-calculated contrast/accessibility flag
@@ -39,13 +29,10 @@ interface ThemeColors {
     brandAccent: string;
 
     // UI colors
-    colorScale: {
-        light: ColorScaleSet;
-        dark: ColorScaleSet;
-    };
+    colorScale: ColorScaleSet;
+    accentName: string;
 
-    grayScale: ColorScaleSet;
-
+    background: string;
     text: string;
     textMuted: string;
 }
@@ -54,4 +41,5 @@ export interface ThemeState {
     mode: "light" | "dark";
     colors: ThemeColors;
     customPalette: string[]; // TODO: Change this to be its own type
+    css?: string;
 }

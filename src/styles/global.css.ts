@@ -42,10 +42,6 @@ globalStyle("h1", {
     lineHeight: 1.1,
 });
 
-// globalStyle(".radix-themes", {
-//     background: "var(--gray-1)",
-// });
-
 globalStyle(".text-muted", {
     color: "var(--gray-11)",
 });

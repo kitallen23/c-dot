@@ -7,9 +7,13 @@ import { Outlet } from "react-router-dom";
 import Layout from "@/components/Layout/Layout";
 import { setSelectedColor } from "@/store/themeSlice";
 import { RootState, store } from "@/store";
+import useStyleInjection from "@/hooks/useStyleInjection";
 
 function App() {
-    const { mode, colors } = useSelector((state: RootState) => state.theme);
+    const { mode, colors, css } = useSelector(
+        (state: RootState) => state.theme
+    );
+    useStyleInjection(css);
 
     // This will trigger the middleware to apply the initial colors
     useEffect(() => {
@@ -27,7 +31,11 @@ function App() {
                 appearance={mode}
                 grayColor="gray"
                 scaling="100%"
-                accentColor="red"
+                accentColor={
+                    colors.accentName as React.ComponentPropsWithoutRef<
+                        typeof Theme
+                    >["accentColor"]
+                }
             >
                 <Layout>
                     <Outlet />

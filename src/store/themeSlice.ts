@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ColorScaleSet, ThemeState } from "../types/theme";
+import { ThemeState } from "../types/theme";
 import { isBrandSafe } from "@/utils/colorUtils";
 import {
+    BACKGROUNDS,
     BRAND_ACCENT,
     DEFAULT_COLOR_SCALE,
-    GRAYSCALE,
+    DEFAULT_THEME_CSS,
 } from "@/utils/constants";
+import { ColorScaleSet, getColorName } from "@/utils/radixColors";
 
 const initialState: ThemeState = {
     mode: "dark",
@@ -16,11 +18,13 @@ const initialState: ThemeState = {
         },
         brandAccent: BRAND_ACCENT.dark,
         colorScale: DEFAULT_COLOR_SCALE,
-        grayScale: GRAYSCALE.dark,
-        text: GRAYSCALE.dark.base[12],
-        textMuted: GRAYSCALE.dark.base[11],
+        accentName: "custom",
+        background: BACKGROUNDS.dark,
+        text: DEFAULT_COLOR_SCALE.grayScale[11],
+        textMuted: DEFAULT_COLOR_SCALE.grayScale[10],
     },
     customPalette: [],
+    css: DEFAULT_THEME_CSS,
 };
 
 const themeSlice = createSlice({
@@ -28,10 +32,9 @@ const themeSlice = createSlice({
     initialState,
     reducers: {
         setThemeMode: (state, action: PayloadAction<"light" | "dark">) => {
-            const grayScale = GRAYSCALE[action.payload];
-
+            // Check if the new selected accent color is brand-safe
             const hex = state.colors.selected.hex;
-            const background = grayScale.base[1];
+            const background = BACKGROUNDS[action.payload];
             const isSafe = isBrandSafe(state.colors.selected.hex, background);
             state.colors.selected = {
                 ...state.colors.selected,
@@ -43,13 +46,11 @@ const themeSlice = createSlice({
                 : BRAND_ACCENT[action.payload];
 
             state.mode = action.payload;
-            state.colors.grayScale = grayScale;
-            state.colors.text = grayScale.base[12];
-            state.colors.textMuted = grayScale.base[11];
         },
         setSelectedColor: (state, action: PayloadAction<string>) => {
+            // Check if the previously selected accent color is brand-safe
             const hex = action.payload;
-            const background = state.colors.grayScale.base[1];
+            const background = BACKGROUNDS[state.mode];
             const isSafe = isBrandSafe(hex, background);
 
             state.colors.selected = {
@@ -59,17 +60,16 @@ const themeSlice = createSlice({
 
             state.colors.brandAccent = isSafe ? hex : state.colors.brandAccent;
         },
+        setThemeCss: (state, action: PayloadAction<string>) => {
+            state.css = action.payload;
+        },
         updateCustomPalette: (state, action: PayloadAction<string[]>) => {
             state.customPalette = action.payload;
         },
-        updateColorScales: (
-            state,
-            action: PayloadAction<{
-                light: ColorScaleSet;
-                dark: ColorScaleSet;
-            }>
-        ) => {
+        updateColorScales: (state, action: PayloadAction<ColorScaleSet>) => {
+            const accentName = getColorName(action.payload.accentScale[8]);
             state.colors.colorScale = action.payload;
+            state.colors.accentName = accentName;
         },
     },
 });
@@ -77,6 +77,7 @@ const themeSlice = createSlice({
 export const {
     setThemeMode,
     setSelectedColor,
+    setThemeCss,
     updateCustomPalette,
     updateColorScales,
 } = themeSlice.actions;
