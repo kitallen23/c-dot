@@ -6,6 +6,7 @@ import { RootState } from "@/store";
 import { setSelectedColor } from "@/store/themeSlice";
 import { COLOR_SYNC_DEBOUNCE } from "@/utils/constants";
 import { isValidHexColor } from "@/utils/colorUtils";
+import HSVColorPicker from "@/components/ColorPicker/HSVColorPicker";
 
 function ColorPage() {
     const dispatch = useDispatch();
@@ -50,6 +51,9 @@ function ColorPage() {
         { name: "Accessible text", start: 11, end: 12 },
     ];
 
+    /** Test for HSV color picker **/
+    const [color, setColor] = useState({ h: 180, s: 50, v: 50 });
+
     return (
         <Container size="4" py="8">
             <TextField.Root
@@ -58,6 +62,7 @@ function ColorPage() {
                 onChange={handleChange}
                 type="text"
             />
+            <HSVColorPicker color={color} onChange={setColor} />
             <div style={{ padding: "20px" }}>
                 <div
                     style={{

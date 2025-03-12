@@ -47,3 +47,32 @@ export function isBrandSafe(hexColor: string, background: string): boolean {
     // We'll use 3:1 as our threshold for UI elements
     return contrast >= 3;
 }
+
+/**
+ * Converts HSV color values to HSL color values
+ * @param h Hue (0-360)
+ * @param s Saturation (0-100)
+ * @param v Value (0-100)
+ * @returns [h, s, l] array where h is 0-360, s and l are 0-100
+ */
+export function hsvToHsl(
+    h: number,
+    s: number,
+    v: number
+): [number, number, number] {
+    // Create a color from HSV (chroma expects saturation and value in 0-1 range)
+    const color = chroma.hsv(h, s / 100, v / 100);
+
+    // Get HSL values (returns [h, s, l] with s and l in 0-1 range)
+    const hsl = color.hsl();
+
+    // Handle NaN values that can occur with grayscale colors
+    const hue = isNaN(hsl[0]) ? h : hsl[0];
+
+    // Convert saturation and lightness back to 0-100 range and round
+    return [
+        Math.round(hue),
+        Math.round(hsl[1] * 100),
+        Math.round(hsl[2] * 100),
+    ];
+}
