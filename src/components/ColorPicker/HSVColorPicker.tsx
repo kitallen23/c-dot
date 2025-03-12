@@ -5,7 +5,7 @@ import {
     colorPicker,
     hueSliderContainer,
     svPickerContainer,
-} from "@/components/ColorPicker/ColorPicker.css";
+} from "@/components/ColorPicker/HSVColorPicker.css";
 
 interface HSV {
     h: number; // 0-360
