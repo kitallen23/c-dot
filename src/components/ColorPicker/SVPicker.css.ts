@@ -33,19 +33,10 @@ export const svBlackGradient = style({
     right: 0,
     bottom: 0,
     background: "linear-gradient(to top, black, rgba(0, 0, 0, 0))",
-    borderRadius: "var(--radius-3)",
+    borderRadius: "calc(var(--radius-3) - 1px)",
 });
 
 export const svPointer = style({
-    // position: "absolute",
-    // width: "10px",
-    // height: "10px",
-    // borderRadius: "50%",
-    // border: "2px solid white",
-    // boxShadow: "0 0 2px rgba(0, 0, 0, 0.6)",
-    // transform: "translate(-50%, 50%)",
-    // pointerEvents: "none",
-
     position: "absolute",
     transform: "translate(-50%, 50%)",
     pointerEvents: "none",
@@ -65,13 +56,13 @@ globalStyle(`${svPointer} > :nth-child(3)`, {
 });
 
 globalStyle(`${svPointer} > :nth-child(2)`, {
-    width: "13px",
-    height: "13px",
+    width: "14px",
+    height: "14px",
     backgroundColor: "white",
 });
 
 globalStyle(`${svPointer} > :nth-child(1)`, {
-    width: "18px",
-    height: "18px",
+    width: "20px",
+    height: "20px",
     backgroundColor: "black",
 });

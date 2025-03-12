@@ -23,13 +23,20 @@ export const SVPicker: React.FC<SVPickerProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    // const [tempSaturation, setTempSaturation] = useState(saturation);
-    // const [tempValue, setTempValue] = useState(value);
+    const [tempSaturation, setTempSaturation] = useState(saturation);
+    const [tempValue, setTempValue] = useState(value);
+
+    useEffect(() => {
+        if (!isDragging) {
+            setTempSaturation(saturation);
+            setTempValue(value);
+        }
+    }, [saturation, value, isDragging]);
 
     // Convert HSV values to position percentages
     const pointerStyle = {
-        left: `${saturation}%`,
-        bottom: `${value}%`,
+        left: `${isDragging ? tempSaturation : saturation}%`,
+        bottom: `${isDragging ? tempValue : value}%`,
     };
 
     // Handle mouse/touch interactions
@@ -48,9 +55,10 @@ export const SVPicker: React.FC<SVPickerProps> = ({
             newSaturation = Math.max(0, Math.min(100, newSaturation));
             newValue = Math.max(0, Math.min(100, newValue));
 
-            onChange(newSaturation, newValue);
+            setTempSaturation(newSaturation);
+            setTempValue(newValue);
         },
-        [onChange]
+        []
     );
 
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -79,6 +87,9 @@ export const SVPicker: React.FC<SVPickerProps> = ({
         };
 
         const handleEnd = () => {
+            if (isDragging) {
+                onChange(tempSaturation, tempValue);
+            }
             setIsDragging(false);
         };
 
@@ -93,12 +104,16 @@ export const SVPicker: React.FC<SVPickerProps> = ({
             window.removeEventListener("touchmove", handleTouchMove);
             window.removeEventListener("touchend", handleEnd);
         };
-    }, [isDragging, onChange, handleInteraction]);
+    }, [isDragging, handleInteraction, onChange, tempSaturation, tempValue]);
 
     // Convert hue to RGB for the background color
     const hueColor = `hsl(${hue}, 100%, 50%)`;
 
-    const hsl = hsvToHsl(hue, saturation, value);
+    const hsl = hsvToHsl(
+        hue,
+        isDragging ? tempSaturation : saturation,
+        isDragging ? tempValue : value
+    );
 
     return (
         <div
