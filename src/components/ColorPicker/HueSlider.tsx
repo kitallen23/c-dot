@@ -1,12 +1,26 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { hueSlider, hueThumb } from "@/components/ColorPicker/HueSlider.css";
+import {
+    hueSlider,
+    hueThumb,
+    sliderWidth,
+} from "@/components/ColorPicker/HueSlider.css";
+import { assignInlineVars } from "@vanilla-extract/dynamic";
 
 interface HueSliderProps {
     hue: number; // 0-360
+    width?:
+        | `${number}${"px" | "em" | "rem" | "%" | "vh" | "vw"}`
+        | "auto"
+        | "inherit"
+        | "initial";
     onChange: (hue: number) => void;
 }
 
-export const HueSlider: React.FC<HueSliderProps> = ({ hue, onChange }) => {
+export const HueSlider: React.FC<HueSliderProps> = ({
+    hue,
+    width,
+    onChange,
+}) => {
     const sliderRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -79,8 +93,11 @@ export const HueSlider: React.FC<HueSliderProps> = ({ hue, onChange }) => {
             ref={sliderRef}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
+            style={assignInlineVars({
+                [sliderWidth]: width,
+            })}
         >
-            <div className={hueThumb} style={thumbStyle}></div>
+            <div className={hueThumb} style={thumbStyle} />
         </div>
     );
 };

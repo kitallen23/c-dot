@@ -1,8 +1,14 @@
-import { style } from "@vanilla-extract/css";
+import { createVar, style } from "@vanilla-extract/css";
+
+export const sliderWidth = createVar();
 
 export const hueSlider = style({
+    vars: {
+        [sliderWidth]: "34px",
+    },
+
     position: "relative",
-    width: "20px", // Default width for the slider
+    width: sliderWidth,
     height: "100%",
     minHeight: "100px",
     userSelect: "none",
@@ -15,7 +21,7 @@ export const hueSlider = style({
 export const hueThumb = style({
     position: "absolute",
     left: "50%",
-    width: "28px", // Slightly wider than the slider
+    width: `calc(${sliderWidth} + (0.25em * 2))`,
     height: "8px",
     backgroundColor: "white",
     border: "1px solid rgba(0, 0, 0, 0.3)",
