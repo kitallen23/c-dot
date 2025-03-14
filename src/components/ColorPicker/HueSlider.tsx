@@ -5,6 +5,7 @@ import {
     sliderWidth,
 } from "@/components/ColorPicker/HueSlider.css";
 import { assignInlineVars } from "@vanilla-extract/dynamic";
+import classNames from "classnames";
 
 interface HueSliderProps {
     hue: number; // 0-360
@@ -26,7 +27,7 @@ export const HueSlider: React.FC<HueSliderProps> = ({
 
     // Calculate thumb position based on hue (0-360)
     const thumbStyle = {
-        top: `${(hue / 360) * 100}%`,
+        top: `calc(${(hue / 360) * 100}%)`,
     };
 
     const handleInteraction = useCallback(
@@ -87,6 +88,9 @@ export const HueSlider: React.FC<HueSliderProps> = ({
         };
     }, [isDragging, handleInteraction]);
 
+    // Convert hue to RGB for the background color
+    const hueColor = `hsl(${hue}, 100%, 50%)`;
+
     return (
         <div
             className={hueSlider}
@@ -97,7 +101,13 @@ export const HueSlider: React.FC<HueSliderProps> = ({
                 [sliderWidth]: width,
             })}
         >
-            <div className={hueThumb} style={thumbStyle} />
+            <div
+                className={classNames(hueThumb, { isDragging })}
+                style={thumbStyle}
+            >
+                <div />
+                <div style={{ backgroundColor: hueColor }} />
+            </div>
         </div>
     );
 };
