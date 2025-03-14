@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     svBlackGradient,
+    // svIsDragging,
     svPicker,
     svPointer,
     svWhiteGradient,
 } from "@/components/ColorPicker/SVPicker.css";
 import { hsvToHsl } from "@/utils/colorUtils";
+import classNames from "classnames";
 
 interface SVPickerProps {
     hue: number;
@@ -125,8 +127,10 @@ export const SVPicker: React.FC<SVPickerProps> = ({
         >
             <div className={svWhiteGradient} />
             <div className={svBlackGradient} />
-            <div className={svPointer} style={pointerStyle}>
-                <div />
+            <div
+                className={classNames(svPointer, { isDragging })}
+                style={pointerStyle}
+            >
                 <div />
                 <div
                     style={{

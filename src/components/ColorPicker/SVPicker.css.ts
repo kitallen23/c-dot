@@ -1,4 +1,8 @@
-import { globalStyle, style } from "@vanilla-extract/css";
+import { BACKGROUNDS } from "@/utils/constants";
+import { createVar, globalStyle, style } from "@vanilla-extract/css";
+
+const basePointerWidth = createVar();
+const pointerBorderWidth = "3px";
 
 export const svPicker = style({
     position: "relative",
@@ -37,32 +41,41 @@ export const svBlackGradient = style({
 });
 
 export const svPointer = style({
+    vars: {
+        [basePointerWidth]: "9px",
+    },
+
     position: "absolute",
     transform: "translate(-50%, 50%)",
     pointerEvents: "none",
 });
 
-globalStyle(`${svPointer} > *`, {
+globalStyle(`${svPointer}.isDragging`, {
+    vars: {
+        [basePointerWidth]: "20px",
+    },
+    zIndex: 1,
+});
+
+globalStyle(`${svPointer} > div`, {
     position: "absolute",
     borderRadius: "50%",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-});
-
-globalStyle(`${svPointer} > :nth-child(3)`, {
-    width: "8px",
-    height: "8px",
+    transition: "width, height 0.05s",
 });
 
 globalStyle(`${svPointer} > :nth-child(2)`, {
-    width: "14px",
-    height: "14px",
-    backgroundColor: "white",
+    width: basePointerWidth,
+    height: basePointerWidth,
+    outline: `${pointerBorderWidth} solid ${BACKGROUNDS.light}`,
 });
 
 globalStyle(`${svPointer} > :nth-child(1)`, {
-    width: "20px",
-    height: "20px",
-    backgroundColor: "black",
+    // Border width * 2 gives us the edge of the white circle.
+    // So border width * 4 gives us the edge of this; the black circle.
+    width: `calc(${basePointerWidth} + ${pointerBorderWidth} * 4)`,
+    height: `calc(${basePointerWidth} + ${pointerBorderWidth} * 4)`,
+    backgroundColor: BACKGROUNDS.dark,
 });
