@@ -1,4 +1,4 @@
-import chroma from "chroma-js";
+import Color from "colorjs.io";
 
 export function isValidHexColor(color: string): boolean {
     const hexColorRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
@@ -40,7 +40,12 @@ export function normalizeHexColor(color: string): string {
  * @returns Whether the color has sufficient contrast for accessibility
  */
 export function isBrandSafe(hexColor: string, background: string): boolean {
-    const contrast = chroma.contrast(hexColor, background);
+    // Create Color objects
+    const color1 = new Color(hexColor);
+    const color2 = new Color(background);
+
+    // Calculate contrast ratio
+    const contrast = color1.contrast(color2, "WCAG21");
 
     // WCAG AA requires a contrast ratio of at least 4.5:1 for normal text
     // and 3:1 for large text or UI components
@@ -60,19 +65,22 @@ export function hsvToHsl(
     s: number,
     v: number
 ): [number, number, number] {
-    // Create a color from HSV (chroma expects saturation and value in 0-1 range)
-    const color = chroma.hsv(h, s / 100, v / 100);
+    // Create a color from HSV
+    const color = new Color("hsv", [h, s, v]);
 
-    // Get HSL values (returns [h, s, l] with s and l in 0-1 range)
-    const hsl = color.hsl();
+    // Convert to HSL
+    const hslColor = color.to("hsl");
+
+    // Extract HSL values
+    const [hue, saturation, lightness] = hslColor.coords;
 
     // Handle NaN values that can occur with grayscale colors
-    const hue = isNaN(hsl[0]) ? h : hsl[0];
+    const finalHue = isNaN(hue) ? h : hue;
 
     // Convert saturation and lightness back to 0-100 range and round
     return [
-        Math.round(hue),
-        Math.round(hsl[1] * 100),
-        Math.round(hsl[2] * 100),
+        Math.round(finalHue),
+        Math.round(saturation),
+        Math.round(lightness),
     ];
 }

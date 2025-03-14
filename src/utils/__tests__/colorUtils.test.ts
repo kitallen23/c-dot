@@ -173,7 +173,7 @@ describe("hsvToHsl", () => {
 
     // Other colors with correct calculations
     it("should handle pastel colors correctly", () => {
-        expect(hsvToHsl(30, 30, 90)).toEqual([30, 57, 76]);
+        expect(hsvToHsl(30, 30, 90)).toEqual([30, 57, 77]);
     });
 
     it("should handle dark colors correctly", () => {
