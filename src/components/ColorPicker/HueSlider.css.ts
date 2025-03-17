@@ -65,15 +65,14 @@ globalStyle(`.radix-themes.dark ${hueThumb} > :nth-child(2)`, {
 });
 globalStyle(`.radix-themes.dark ${hueThumb} > :nth-child(1)`, {
     backgroundColor: BACKGROUNDS.dark,
-    // backgroundColor: "red",
 });
 
 // Light theme styles
 globalStyle(`.radix-themes.light ${hueThumb} > :nth-child(2)`, {
-    // outlineColor: BACKGROUNDS.dark,
-    outlineColor: BACKGROUNDS.light,
+    outlineColor: BACKGROUNDS.dark,
+    // outlineColor: BACKGROUNDS.light,
 });
 globalStyle(`.radix-themes.light ${hueThumb} > :nth-child(1)`, {
-    // backgroundColor: BACKGROUNDS.light,
-    backgroundColor: BACKGROUNDS.dark,
+    backgroundColor: BACKGROUNDS.light,
+    // backgroundColor: BACKGROUNDS.dark,
 });
