@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import debounce from "@/utils/debounce";
 import {
     hexToHsv,
     hslToHsv,
@@ -29,22 +28,22 @@ const useColorState = (externalHex: string) => {
     const isInternalUpdateRef = useRef(false);
 
     const debouncedFunctionsRef = useRef({
-        updateHex: debounce((hex: string) => {
+        updateHex: (hex: string) => {
             isInternalUpdateRef.current = true;
             setInternalColor(toHsvObject(hexToHsv(hex)));
-        }, 0),
-        updateRgb: debounce((rgb: RGB) => {
+        },
+        updateRgb: (rgb: RGB) => {
             isInternalUpdateRef.current = true;
             setInternalColor(toHsvObject(rgbToHsv(rgb.r, rgb.g, rgb.b)));
-        }, 0),
-        updateHsl: debounce((hsl: HSL) => {
+        },
+        updateHsl: (hsl: HSL) => {
             isInternalUpdateRef.current = true;
             setInternalColor(toHsvObject(hslToHsv(hsl.h, hsl.s, hsl.l)));
-        }, 0),
-        updateHsv: debounce((hsv: HSV) => {
+        },
+        updateHsv: (hsv: HSV) => {
             isInternalUpdateRef.current = true;
             setInternalColor(hsv);
-        }, 0),
+        },
     });
 
     // Listen for external hex changes
