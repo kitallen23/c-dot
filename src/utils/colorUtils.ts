@@ -54,33 +54,221 @@ export function isBrandSafe(hexColor: string, background: string): boolean {
 }
 
 /**
- * Converts HSV color values to HSL color values
- * @param h Hue (0-360)
- * @param s Saturation (0-100)
- * @param v Value (0-100)
- * @returns [h, s, l] array where h is 0-360, s and l are 0-100
+ * Converts HSV color values to RGB color values.
+ *
+ * @param h - The hue value (0-360)
+ * @param s - The saturation value (0-100)
+ * @param v - The value/brightness (0-100)
+ * @returns An array of RGB values, each in the range 0-255
+ */
+export function hsvToRgb(
+    h: number,
+    s: number,
+    v: number
+): [number, number, number] {
+    // Create a color in HSV space
+    const color = new Color("hsv", [h, s, v]);
+
+    // Convert to sRGB
+    const rgb = color.to("srgb");
+
+    // Fix floating point precision issues by rounding to 6 decimal places
+    // This properly handles values like 0.29999999999999993
+    return [
+        Math.round(rgb.coords[0] * 255 * 1000000) / 1000000,
+        Math.round(rgb.coords[1] * 255 * 1000000) / 1000000,
+        Math.round(rgb.coords[2] * 255 * 1000000) / 1000000,
+    ];
+}
+
+/**
+ * Converts HSL color values to HSV color values.
+ *
+ * @param h - The hue value (0-360)
+ * @param s - The saturation value (0-100)
+ * @param l - The lightness value (0-100)
+ * @returns An array of HSV values [h(0-360), s(0-100), v(0-100)]
+ */
+export function hslToHsv(
+    h: number,
+    s: number,
+    l: number
+): [number, number, number] {
+    // For grayscale (s=0), hue is irrelevant
+    if (s === 0) {
+        return [0, 0, l];
+    }
+
+    const color = new Color("hsl", [h, s, l]);
+    const hsv = color.to("hsv");
+
+    return [
+        Math.round(hsv.coords[0] * 1000000) / 1000000 || 0, // Handle NaN
+        Math.round(hsv.coords[1] * 1000000) / 1000000,
+        Math.round(hsv.coords[2] * 1000000) / 1000000,
+    ];
+}
+
+/**
+ * Converts RGB color values to HSV color values.
+ *
+ * @param r - The red value (0-255)
+ * @param g - The green value (0-255)
+ * @param b - The blue value (0-255)
+ * @returns An array of HSV values [h(0-360), s(0-100), v(0-100)]
+ */
+export function rgbToHsv(
+    r: number,
+    g: number,
+    b: number
+): [number, number, number] {
+    let h = 0,
+        s = 0,
+        v = 0;
+
+    // Check for grayscale
+    if (r === g && g === b) {
+        // For grayscale, only calculate value (v)
+        v = r / 2.55; // Convert to 0-100 range
+    } else {
+        const color = new Color("srgb", [r / 255, g / 255, b / 255]);
+        const hsv = color.to("hsv");
+
+        h = isNaN(hsv.coords[0]) ? 0 : hsv.coords[0];
+        s = hsv.coords[1];
+        v = hsv.coords[2];
+    }
+
+    // Apply consistent rounding to all values
+    return [
+        Math.round(h * 1000000) / 1000000,
+        Math.round(s * 1000000) / 1000000,
+        Math.round(v * 1000000) / 1000000,
+    ];
+}
+
+/**
+ * Converts HEX color string to HSV color values.
+ *
+ * @param hex - The hex color string (e.g., "#ff0000")
+ * @returns An array of HSV values [h(0-360), s(0-100), v(0-100)]
+ */
+export function hexToHsv(hex: string): [number, number, number] {
+    let h = 0,
+        s = 0,
+        v = 0;
+
+    const color = new Color(hex);
+
+    // Check for grayscale by converting to RGB first
+    const rgb = color.to("srgb");
+    const r = Math.round(rgb.coords[0] * 255);
+    const g = Math.round(rgb.coords[1] * 255);
+    const b = Math.round(rgb.coords[2] * 255);
+
+    if (r === g && g === b) {
+        // For grayscale, only calculate value (v)
+        v = r / 2.55; // Convert to 0-100 range
+    } else {
+        const hsv = color.to("hsv");
+
+        h = isNaN(hsv.coords[0]) ? 0 : hsv.coords[0];
+        s = hsv.coords[1];
+        v = hsv.coords[2];
+    }
+
+    // Apply consistent rounding to all values
+    return [
+        Math.round(h * 1000000) / 1000000,
+        Math.round(s * 1000000) / 1000000,
+        Math.round(v * 1000000) / 1000000,
+    ];
+}
+
+/**
+ * Converts HSV color values to HSL color values.
+ *
+ * @param h - The hue value (0-360)
+ * @param s - The saturation value (0-100)
+ * @param v - The value/brightness (0-100)
+ * @returns An array of HSL values [h(0-360), s(0-100), l(0-100)]
  */
 export function hsvToHsl(
     h: number,
     s: number,
     v: number
 ): [number, number, number] {
-    // Create a color from HSV
-    const color = new Color("hsv", [h, s, v]);
+    let hOut = h,
+        sOut = 0,
+        lOut = 0;
 
-    // Convert to HSL
-    const hslColor = color.to("hsl");
+    // For grayscale (s=0)
+    if (s === 0) {
+        // For grayscale, lightness equals value
+        lOut = v;
+    } else {
+        const color = new Color("hsv", [h, s, v]);
+        const hsl = color.to("hsl");
 
-    // Extract HSL values
-    const [hue, saturation, lightness] = hslColor.coords;
+        hOut = isNaN(hsl.coords[0]) ? h : hsl.coords[0];
+        sOut = hsl.coords[1];
+        lOut = hsl.coords[2];
+    }
 
-    // Handle NaN values that can occur with grayscale colors
-    const finalHue = isNaN(hue) ? h : hue;
-
-    // Convert saturation and lightness back to 0-100 range and round
     return [
-        Math.round(finalHue),
-        Math.round(saturation),
-        Math.round(lightness),
+        Math.round(hOut * 1000000) / 1000000,
+        Math.round(sOut * 1000000) / 1000000,
+        Math.round(lOut * 1000000) / 1000000,
+    ];
+}
+
+/**
+ * Converts RGB color values to HEX color string.
+ *
+ * @param r - The red value (0-255)
+ * @param g - The green value (0-255)
+ * @param b - The blue value (0-255)
+ * @returns A hex color string (e.g., "#ff0000")
+ */
+export function rgbToHex(r: number, g: number, b: number): string {
+    const color = new Color("srgb", [r / 255, g / 255, b / 255]);
+    return color.to("srgb").toString({ format: "hex", collapse: false });
+}
+
+/**
+ * Converts RGB color values to HSL color values.
+ *
+ * @param r - The red value (0-255)
+ * @param g - The green value (0-255)
+ * @param b - The blue value (0-255)
+ * @returns An array of HSL values [h(0-360), s(0-100), l(0-100)]
+ */
+export function rgbToHsl(
+    r: number,
+    g: number,
+    b: number
+): [number, number, number] {
+    let h = 0,
+        s = 0,
+        l = 0;
+
+    // Check for grayscale
+    if (r === g && g === b) {
+        // For grayscale, only lightness matters
+        l = r / 2.55; // Convert to 0-100 range
+    } else {
+        const color = new Color("srgb", [r / 255, g / 255, b / 255]);
+        const hsl = color.to("hsl");
+
+        h = isNaN(hsl.coords[0]) ? 0 : hsl.coords[0];
+        s = hsl.coords[1];
+        l = hsl.coords[2];
+    }
+
+    // Apply consistent rounding to all values
+    return [
+        Math.round(h * 1000000) / 1000000,
+        Math.round(s * 1000000) / 1000000,
+        Math.round(l * 1000000) / 1000000,
     ];
 }

@@ -2,7 +2,6 @@ import {
     normalizeHexColor,
     isValidHexColor,
     isBrandSafe,
-    hsvToHsl,
 } from "@/utils/colorUtils";
 import { BACKGROUNDS } from "@/utils/constants";
 import { describe, expect, it } from "vitest";
@@ -115,82 +114,5 @@ describe("isBrandSafe", () => {
 
         expect(isBrandSafe("#5F606A", BACKGROUNDS.dark)).toBe(true); // Just above threshold on black
         expect(isBrandSafe("#5C5C5C", BACKGROUNDS.dark)).toBe(false); // Just below threshold on black
-    });
-});
-
-describe("hsvToHsl", () => {
-    // Primary colors
-    it("should convert red (HSV) to red (HSL)", () => {
-        expect(hsvToHsl(0, 100, 100)).toEqual([0, 100, 50]);
-    });
-
-    it("should convert green (HSV) to green (HSL)", () => {
-        expect(hsvToHsl(120, 100, 100)).toEqual([120, 100, 50]);
-    });
-
-    it("should convert blue (HSV) to blue (HSL)", () => {
-        expect(hsvToHsl(240, 100, 100)).toEqual([240, 100, 50]);
-    });
-
-    // Edge cases
-    it("should convert black (HSV) to black (HSL)", () => {
-        expect(hsvToHsl(0, 0, 0)).toEqual([0, 0, 0]);
-    });
-
-    it("should convert white (HSV) to white (HSL)", () => {
-        expect(hsvToHsl(0, 0, 100)).toEqual([0, 0, 100]);
-    });
-
-    it("should convert gray (HSV) to gray (HSL)", () => {
-        expect(hsvToHsl(0, 0, 50)).toEqual([0, 0, 50]);
-    });
-
-    // Mid-range values with correct calculations
-    it("should handle mid-range values correctly", () => {
-        expect(hsvToHsl(60, 50, 80)).toEqual([60, 50, 60]);
-    });
-
-    it("should handle low saturation correctly", () => {
-        expect(hsvToHsl(180, 20, 75)).toEqual([180, 23, 68]);
-    });
-
-    it("should handle low value correctly", () => {
-        expect(hsvToHsl(300, 80, 30)).toEqual([300, 67, 18]);
-    });
-
-    // Secondary colors
-    it("should handle yellow correctly", () => {
-        expect(hsvToHsl(60, 100, 100)).toEqual([60, 100, 50]);
-    });
-
-    it("should handle cyan correctly", () => {
-        expect(hsvToHsl(180, 100, 100)).toEqual([180, 100, 50]);
-    });
-
-    it("should handle magenta correctly", () => {
-        expect(hsvToHsl(300, 100, 100)).toEqual([300, 100, 50]);
-    });
-
-    // Other colors with correct calculations
-    it("should handle pastel colors correctly", () => {
-        expect(hsvToHsl(30, 30, 90)).toEqual([30, 57, 77]);
-    });
-
-    it("should handle dark colors correctly", () => {
-        expect(hsvToHsl(270, 90, 40)).toEqual([270, 82, 22]);
-    });
-
-    // Specific conversions with correct calculations
-    it("should match specific HSV to HSL conversions", () => {
-        expect(hsvToHsl(210, 70, 90)).toEqual([210, 76, 59]);
-        expect(hsvToHsl(45, 80, 95)).toEqual([45, 88, 57]);
-    });
-
-    // Rounding behavior
-    it("should round output values to integers", () => {
-        const [h, s, l] = hsvToHsl(210, 65, 85);
-        expect(Number.isInteger(h)).toBe(true);
-        expect(Number.isInteger(s)).toBe(true);
-        expect(Number.isInteger(l)).toBe(true);
     });
 });

@@ -7,6 +7,7 @@ import { setSelectedColor } from "@/store/themeSlice";
 import { COLOR_SYNC_DEBOUNCE } from "@/utils/constants";
 import { isValidHexColor } from "@/utils/colorUtils";
 import HSVColorPicker from "@/components/ColorPicker/HSVColorPicker";
+import useColorState from "@/views/color/useColorState";
 
 function ColorPage() {
     const dispatch = useDispatch();
@@ -52,7 +53,11 @@ function ColorPage() {
     ];
 
     /** Test for HSV color picker **/
-    const [color, setColor] = useState({ h: 180, s: 50, v: 50 });
+    // const [color, setColor] = useState({ h: 180, s: 50, v: 50 });
+    const { hsv, updateHsv } = useColorState("#FFFFFF");
+    // useEffect(() => {
+    //     console.log(`hex: `, hex);
+    // }, [hex]);
 
     return (
         <Container size="4" py="8">
@@ -62,7 +67,7 @@ function ColorPage() {
                 onChange={handleChange}
                 type="text"
             />
-            <HSVColorPicker color={color} onChange={setColor} />
+            <HSVColorPicker color={hsv} onChange={updateHsv} />
             <div style={{ padding: "20px" }}>
                 <div
                     style={{
