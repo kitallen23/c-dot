@@ -1,47 +1,53 @@
-import { Container, TextField } from "@radix-ui/themes";
-import { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { Box, Card, Container, Grid, TextField } from "@radix-ui/themes";
+// import { useCallback, useEffect, useState } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { RootState } from "@/store";
-import { setSelectedColor } from "@/store/themeSlice";
-import { COLOR_SYNC_DEBOUNCE } from "@/utils/constants";
-import { isValidHexColor } from "@/utils/colorUtils";
+// import { setSelectedColor } from "@/store/themeSlice";
+// import { COLOR_SYNC_DEBOUNCE } from "@/utils/constants";
+// import { isValidHexColor } from "@/utils/colorUtils";
+
 import HSVColorPicker from "@/components/ColorPicker/HSVColorPicker";
 import useColorState from "@/views/color/useColorState";
+import { HSV } from "@/types/color";
 
 function ColorPage() {
-    const dispatch = useDispatch();
-    const brandAccent = useSelector(
-        (state: RootState) => state.theme.colors.brandAccent
-    );
+    // const dispatch = useDispatch();
+    // const brandAccent = useSelector(
+    //     (state: RootState) => state.theme.colors.brandAccent
+    // );
     const accentName = useSelector(
         (state: RootState) => state.theme.colors.accentName
     );
 
-    const [inputHex, setInputHex] = useState(brandAccent);
+    const { hsv, hex, updateColor } = useColorState("#FFFFFF");
+    const updateHsv = (value: HSV) => updateColor(value, "hsv");
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setInputHex(event.target.value);
-    };
+    // const [inputHex, setInputHex] = useState(brandAccent);
 
-    const handleSetSelectedColor = useCallback(
-        (hex: string) => {
-            if (isValidHexColor(hex)) {
-                dispatch(setSelectedColor(hex));
-            }
-        },
-        [dispatch]
-    );
+    // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     setInputHex(event.target.value);
+    // };
 
-    // Debounce changes to inputHex
-    useEffect(() => {
-        const timer = setTimeout(
-            () => handleSetSelectedColor(inputHex),
-            COLOR_SYNC_DEBOUNCE
-        );
+    // const handleSetSelectedColor = useCallback(
+    //     (hex: string) => {
+    //         if (isValidHexColor(hex)) {
+    //             dispatch(setSelectedColor(hex));
+    //         }
+    //     },
+    //     [dispatch]
+    // );
 
-        return () => clearTimeout(timer);
-    }, [inputHex, handleSetSelectedColor]);
+    // // Debounce changes to inputHex
+    // useEffect(() => {
+    //     const timer = setTimeout(
+    //         () => handleSetSelectedColor(inputHex),
+    //         COLOR_SYNC_DEBOUNCE
+    //     );
+
+    //     return () => clearTimeout(timer);
+    // }, [inputHex, handleSetSelectedColor]);
 
     const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     const categories = [
@@ -52,22 +58,23 @@ function ColorPage() {
         { name: "Accessible text", start: 11, end: 12 },
     ];
 
-    /** Test for HSV color picker **/
-    // const [color, setColor] = useState({ h: 180, s: 50, v: 50 });
-    const { hsv, updateHsv } = useColorState("#FFFFFF");
-    // useEffect(() => {
-    //     console.log(`hex: `, hex);
-    // }, [hex]);
-
     return (
         <Container size="4" py="8">
-            <TextField.Root
-                placeholder="Enter a color..."
-                value={inputHex}
-                onChange={handleChange}
-                type="text"
-            />
-            <HSVColorPicker color={hsv} onChange={updateHsv} />
+            <Card>
+                <Box p="6">
+                    <Grid columns="2" gap="4">
+                        <HSVColorPicker color={hsv} onChange={updateHsv} />
+                        <TextField.Root
+                            placeholder="Enter a color..."
+                            value={hex}
+                            onChange={event =>
+                                updateColor(event.target.value, "hex")
+                            }
+                            type="text"
+                        />
+                    </Grid>
+                </Box>
+            </Card>
             <div style={{ padding: "20px" }}>
                 <div
                     style={{

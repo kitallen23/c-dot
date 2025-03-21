@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ColorTuple, HSL, HSV, RGB } from "@/types/color";
 import {
-    hexToHsv,
-    hslToHsv,
+    hexToRgb,
+    hslToRgb,
     hsvToRgb,
     rgbToHex,
     rgbToHsl,
     rgbToHsv,
+    toHslObj,
+    toHsvObj,
+    toRgbObj,
 } from "@/utils/colorUtils";
-import { HSL, HSV, RGB } from "@/types/color";
 
 interface ColorState {
     hex: string;
@@ -16,76 +19,110 @@ interface ColorState {
     hsv: HSV;
 }
 
-const toRgbObject = ([r, g, b]: number[]): RGB => ({ r, g, b });
-const toHsvObject = ([h, s, v]: number[]): HSV => ({ h, s, v });
-const toHslObject = ([h, s, l]: number[]): HSL => ({ h, s, l });
+type ColorSource = keyof ColorState;
 
-const useColorState = (externalHex: string) => {
-    // Use HSV as the source of truth, as this will likely update the most
-    const [internalColor, setInternalColor] = useState<HSV>(
-        toHsvObject(hexToHsv(externalHex))
-    );
-    const isInternalUpdateRef = useRef(false);
+type UseColorStateReturn = ColorState & {
+    updateColor: (value: RGB | HSL | HSV | string, source: ColorSource) => void;
+};
 
-    const debouncedFunctionsRef = useRef({
-        updateHex: (hex: string) => {
-            isInternalUpdateRef.current = true;
-            setInternalColor(toHsvObject(hexToHsv(hex)));
-        },
-        updateRgb: (rgb: RGB) => {
-            isInternalUpdateRef.current = true;
-            setInternalColor(toHsvObject(rgbToHsv(rgb.r, rgb.g, rgb.b)));
-        },
-        updateHsl: (hsl: HSL) => {
-            isInternalUpdateRef.current = true;
-            setInternalColor(toHsvObject(hslToHsv(hsl.h, hsl.s, hsl.l)));
-        },
-        updateHsv: (hsv: HSV) => {
-            isInternalUpdateRef.current = true;
-            setInternalColor(hsv);
-        },
+const isDefaultHueValue = (value: ColorTuple): boolean =>
+    value[0] === 0 && value[1] === 0 && value[2] === 100;
+const DEFAULT_HUE_VALUE: ColorTuple = [180, 0, 100];
+
+// TODO: Set this value properly
+const DEBOUNCE_MS = 1000;
+
+export const useColorState = (initialColor: string): UseColorStateReturn => {
+    const [colorState, setColorState] = useState<ColorState>(() => {
+        const rgb = hexToRgb(initialColor);
+        const hsv = rgbToHsv(...rgb);
+        const hsl = rgbToHsl(...rgb);
+        return {
+            hex: initialColor,
+            rgb: toRgbObj(rgb),
+            hsl: toHslObj(isDefaultHueValue(hsl) ? DEFAULT_HUE_VALUE : hsl),
+            hsv: toHsvObj(isDefaultHueValue(hsv) ? DEFAULT_HUE_VALUE : hsv),
+        };
     });
 
-    // Listen for external hex changes
+    // Tracks the last update source to prevent unnecessary conversions
+    const lastSourceRef = useRef<ColorSource | null>(null);
+
+    // Store our timeout ID for debouncing
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
     useEffect(() => {
-        if (!isInternalUpdateRef.current) {
-            setInternalColor(toHsvObject(hexToHsv(externalHex)));
-        } else {
-            isInternalUpdateRef.current = false;
-        }
-    }, [externalHex]);
-
-    // Derived color values
-    const colorState = useMemo<ColorState>(() => {
-        const rgb = toRgbObject(
-            hsvToRgb(internalColor.h, internalColor.s, internalColor.v)
-        );
-        return {
-            hsv: internalColor,
-            rgb,
-            hex: rgbToHex(rgb.r, rgb.g, rgb.b),
-            hsl: toHslObject(rgbToHsl(rgb.r, rgb.g, rgb.b)),
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
         };
-    }, [internalColor]);
-
-    // Wrapper functions that call the debounced functions
-    const updateHex = useCallback((hex: string) => {
-        debouncedFunctionsRef.current.updateHex(hex);
     }, []);
 
-    const updateRgb = useCallback((rgb: RGB) => {
-        debouncedFunctionsRef.current.updateRgb(rgb);
-    }, []);
+    const updateColor = useCallback(
+        (value: RGB | HSL | HSV | string, source: ColorSource) => {
+            setColorState(prevState => {
+                const newState = { ...prevState, [source]: value };
+                lastSourceRef.current = source;
+                return newState;
+            });
 
-    const updateHsl = useCallback((hsl: HSL) => {
-        debouncedFunctionsRef.current.updateHsl(hsl);
-    }, []);
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
 
-    const updateHsv = useCallback((hsv: HSV) => {
-        debouncedFunctionsRef.current.updateHsv(hsv);
-    }, []);
+            debounceTimerRef.current = setTimeout(() => {
+                setColorState(() => {
+                    let rgb: RGB, hsv: HSV, hsl: HSL, hex: string;
 
-    return { ...colorState, updateHex, updateRgb, updateHsl, updateHsv };
+                    switch (source) {
+                        case "hex": {
+                            hex = value as string;
+                            const rgbArr = hexToRgb(hex);
+                            rgb = toRgbObj(rgbArr);
+                            hsv = toHsvObj(rgbToHsv(...rgbArr));
+                            hsl = toHslObj(rgbToHsl(...rgbArr));
+                            break;
+                        }
+                        case "rgb": {
+                            rgb = value as RGB;
+                            const rgbArr: ColorTuple = [rgb.r, rgb.g, rgb.b];
+                            hex = rgbToHex(...rgbArr);
+                            hsv = toHsvObj(rgbToHsv(...rgbArr));
+                            hsl = toHslObj(rgbToHsl(...rgbArr));
+                            break;
+                        }
+                        case "hsl": {
+                            hsl = value as HSL;
+                            const rgbArr = hslToRgb(hsl.h, hsl.s, hsl.l);
+                            rgb = toRgbObj(rgbArr);
+                            hex = rgbToHex(...rgbArr);
+                            hsv = toHsvObj(rgbToHsv(...rgbArr));
+                            break;
+                        }
+                        case "hsv": {
+                            hsv = value as HSV;
+                            const rgbArr = hsvToRgb(hsv.h, hsv.s, hsv.v);
+                            rgb = toRgbObj(rgbArr);
+                            hsl = toHslObj(rgbToHsl(...rgbArr));
+                            hex = rgbToHex(...rgbArr);
+                            break;
+                        }
+                    }
+
+                    return { hex, rgb, hsl, hsv };
+                });
+
+                debounceTimerRef.current = null;
+            }, DEBOUNCE_MS);
+        },
+        []
+    );
+
+    return {
+        ...colorState,
+        updateColor,
+    };
 };
 
 export default useColorState;
