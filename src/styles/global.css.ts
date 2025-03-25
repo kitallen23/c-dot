@@ -14,6 +14,7 @@ globalStyle(":root", {
     MozOsxFontSmoothing: "grayscale",
 
     vars: {
+        "--letter-spacing-lg": "0.05em",
         "--line-height": lineHeight.default,
         [topbarHeightVar]: `${topbarHeight}px`,
     },

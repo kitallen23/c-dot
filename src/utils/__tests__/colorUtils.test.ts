@@ -1,57 +1,57 @@
 import {
     normalizeHexColor,
-    isValidHexColor,
+    isValidHexString,
     isBrandSafe,
 } from "@/utils/colorUtils";
 import { BACKGROUNDS } from "@/utils/constants";
 import { describe, expect, it } from "vitest";
 
-describe("isValidHexColor", () => {
+describe("isValidHexString", () => {
     // Valid hex colors
     it("should return true for valid 3-digit hex colors", () => {
-        expect(isValidHexColor("#123")).toBe(true);
-        expect(isValidHexColor("#abc")).toBe(true);
-        expect(isValidHexColor("#ABC")).toBe(true);
-        expect(isValidHexColor("#1a2")).toBe(true);
-        expect(isValidHexColor("#a1b")).toBe(true);
-        expect(isValidHexColor("#A1b")).toBe(true);
+        expect(isValidHexString("#123")).toBe(true);
+        expect(isValidHexString("#abc")).toBe(true);
+        expect(isValidHexString("#ABC")).toBe(true);
+        expect(isValidHexString("#1a2")).toBe(true);
+        expect(isValidHexString("#a1b")).toBe(true);
+        expect(isValidHexString("#A1b")).toBe(true);
     });
 
     it("should return true for valid 6-digit hex colors", () => {
-        expect(isValidHexColor("#123456")).toBe(true);
-        expect(isValidHexColor("#abcdef")).toBe(true);
-        expect(isValidHexColor("#ABCDEF")).toBe(true);
-        expect(isValidHexColor("#123abc")).toBe(true);
-        expect(isValidHexColor("#def456")).toBe(true);
-        expect(isValidHexColor("#DEF456")).toBe(true);
+        expect(isValidHexString("#123456")).toBe(true);
+        expect(isValidHexString("#abcdef")).toBe(true);
+        expect(isValidHexString("#ABCDEF")).toBe(true);
+        expect(isValidHexString("#123abc")).toBe(true);
+        expect(isValidHexString("#def456")).toBe(true);
+        expect(isValidHexString("#DEF456")).toBe(true);
     });
 
     // Invalid hex colors
     it("should return false when # is missing", () => {
-        expect(isValidHexColor("123")).toBe(false);
-        expect(isValidHexColor("123456")).toBe(false);
+        expect(isValidHexString("123")).toBe(false);
+        expect(isValidHexString("123456")).toBe(false);
     });
     it("should return false for invalid 3-digit hex colors", () => {
-        expect(isValidHexColor("#ghi")).toBe(false);
-        expect(isValidHexColor("#GHI")).toBe(false);
-        expect(isValidHexColor("#12j")).toBe(false);
-        expect(isValidHexColor("#@^$")).toBe(false);
+        expect(isValidHexString("#ghi")).toBe(false);
+        expect(isValidHexString("#GHI")).toBe(false);
+        expect(isValidHexString("#12j")).toBe(false);
+        expect(isValidHexString("#@^$")).toBe(false);
     });
     it("should return false for invalid 6-digit hex colors", () => {
-        expect(isValidHexColor("#12345x")).toBe(false);
-        expect(isValidHexColor("#helloo")).toBe(false);
-        expect(isValidHexColor("#12*456")).toBe(false);
+        expect(isValidHexString("#12345x")).toBe(false);
+        expect(isValidHexString("#helloo")).toBe(false);
+        expect(isValidHexString("#12*456")).toBe(false);
     });
     it("should return false for incorrect length", () => {
-        expect(isValidHexColor("#12")).toBe(false);
-        expect(isValidHexColor("#1234")).toBe(false);
-        expect(isValidHexColor("#12345")).toBe(false);
-        expect(isValidHexColor("#1234567")).toBe(false);
+        expect(isValidHexString("#12")).toBe(false);
+        expect(isValidHexString("#1234")).toBe(false);
+        expect(isValidHexString("#12345")).toBe(false);
+        expect(isValidHexString("#1234567")).toBe(false);
     });
     it("should return false for invalid inputs", () => {
-        expect(isValidHexColor("")).toBe(false);
-        expect(isValidHexColor("#")).toBe(false);
-        expect(isValidHexColor("##123")).toBe(false);
+        expect(isValidHexString("")).toBe(false);
+        expect(isValidHexString("#")).toBe(false);
+        expect(isValidHexString("##123")).toBe(false);
     });
 });
 

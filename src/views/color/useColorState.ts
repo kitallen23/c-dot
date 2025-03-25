@@ -29,8 +29,7 @@ const isDefaultHueValue = (value: ColorTuple): boolean =>
     value[0] === 0 && value[1] === 0 && value[2] === 100;
 const DEFAULT_HUE_VALUE: ColorTuple = [180, 0, 100];
 
-// TODO: Set this value properly
-const DEBOUNCE_MS = 1000;
+const DEBOUNCE_MS = 100;
 
 export const useColorState = (initialColor: string): UseColorStateReturn => {
     const [colorState, setColorState] = useState<ColorState>(() => {

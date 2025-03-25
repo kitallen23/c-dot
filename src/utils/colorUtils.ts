@@ -17,9 +17,48 @@ export const toHsvObj = (arr: [number, number, number]): HSV => ({
     v: arr[2],
 });
 
-export function isValidHexColor(color: string): boolean {
+export const rgbToString = (value: RGB | null | undefined): string => {
+    if (!value) {
+        return "";
+    }
+
+    const { r, g, b } = value;
+    return `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}`;
+};
+
+export const stringToRgb = (value: string): RGB | null => {
+    if (!value) {
+        return null;
+    }
+
+    // Extract the numeric values
+    const values = value.split(/,\s*|\s+/).map(Number);
+
+    return { r: values[0], g: values[1], b: values[2] };
+};
+
+export function isValidHexString(color: string): boolean {
     const hexColorRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
     return hexColorRegex.test(color);
+}
+
+export function isValidRgbString(color: string): boolean {
+    // Match patterns like "255, 0, 128", "255,0,128", or "255 0 128"
+    // Each number can have up to 6 decimal places
+    const rgbRegex =
+        /^(\d+(\.\d{1,6})?)(,\s*|\s+)(\d+(\.\d{1,6})?)(,\s*|\s+)(\d+(\.\d{1,6})?)$/;
+
+    if (!rgbRegex.test(color)) {
+        return false;
+    }
+
+    // Extract the numeric values
+    const values = color.split(/,\s*|\s+/).map(Number);
+
+    // Ensure we have exactly 3 values and each is between 0 and 255 inclusive
+    return (
+        values.length === 3 && values.every(value => value >= 0 && value <= 255)
+    );
 }
 
 export function normalizeHexColor(color: string): string {
@@ -43,7 +82,7 @@ export function normalizeHexColor(color: string): string {
         normalizedHex = `#${expandedHex}`;
     }
 
-    if (isValidHexColor(normalizedHex)) {
+    if (isValidHexString(normalizedHex)) {
         return normalizedHex;
     }
 

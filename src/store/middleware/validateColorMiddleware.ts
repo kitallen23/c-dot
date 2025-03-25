@@ -1,6 +1,6 @@
 import { Middleware } from "@reduxjs/toolkit";
 import { setSelectedColor } from "@/store/themeSlice";
-import { isValidHexColor, normalizeHexColor } from "@/utils/colorUtils";
+import { isValidHexString, normalizeHexColor } from "@/utils/colorUtils";
 
 export const validateColorMiddleware: Middleware = () => next => action => {
     // Check if this is a setSelectedColor action
@@ -8,7 +8,7 @@ export const validateColorMiddleware: Middleware = () => next => action => {
         const hexColor = action.payload;
 
         // Validate the hex color
-        if (!isValidHexColor(hexColor)) {
+        if (!isValidHexString(hexColor)) {
             console.warn(`Invalid hex color: ${hexColor}`);
             // Return without calling next(action), which prevents the reducer from running
             return;

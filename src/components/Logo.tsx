@@ -1,4 +1,4 @@
-function Logo({ size = 128, color = "#FFFFFF" }) {
+function Logo({ size = 128, color = "#ffffff" }) {
     const scale = size / 128;
     const center = 64 * scale;
     const outerRadius = 60 * scale;

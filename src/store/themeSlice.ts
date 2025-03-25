@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ThemeState } from "../types/theme";
-import { isBrandSafe } from "@/utils/colorUtils";
+import { isBrandSafe, normalizeHexColor } from "@/utils/colorUtils";
 import {
     BACKGROUNDS,
     BRAND_ACCENT,
@@ -13,7 +13,7 @@ const initialState: ThemeState = {
     mode: "dark",
     colors: {
         selected: {
-            hex: "#FFFFFF",
+            hex: "#ffffff",
             isBrandSafe: true,
         },
         brandAccent: BRAND_ACCENT.dark,
@@ -67,9 +67,13 @@ const themeSlice = createSlice({
             state.customPalette = action.payload;
         },
         updateColorScales: (state, action: PayloadAction<ColorScaleSet>) => {
-            const accentName = getColorName(action.payload.accentScale[8]);
+            const brandAccent = normalizeHexColor(
+                action.payload.accentScale[8]
+            );
+            const accentName = getColorName(brandAccent);
             state.colors.colorScale = action.payload;
             state.colors.accentName = accentName;
+            state.colors.brandAccent = brandAccent;
         },
     },
 });

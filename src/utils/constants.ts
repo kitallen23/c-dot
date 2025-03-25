@@ -2,7 +2,7 @@ import { ColorScaleSet } from "@/utils/radixColors";
 
 export const HOMEPAGE = "/";
 
-export const COLOR_SYNC_DEBOUNCE = 500;
+export const COLOR_SYNC_DEBOUNCE = 1000;
 
 export const DEFAULT_COLOR_SCALE: ColorScaleSet = {
     accentScale: [
