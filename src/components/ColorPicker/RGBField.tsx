@@ -25,8 +25,69 @@ function cleanRgbInput(input: string): string {
         return `${match[1]}, ${match[2]}, ${match[3]}`;
     }
 
-    return trimmed;
+    return input;
 }
+
+/**
+ * Updates RGB values in a string while preserving the exact original format/delimiters
+ *
+ * @param originalFormat - The original RGB string with its formatting
+ * @param newRgb - The new RGB values to insert
+ * @returns A string with new RGB values but original formatting preserved
+ */
+const updateRgbPreservingFormat = (
+    originalFormat: string,
+    newRgb: RGB | null | undefined
+): string => {
+    if (!newRgb) {
+        return originalFormat || "";
+    }
+
+    const { r, g, b } = newRgb;
+    const roundedR = Math.round(r);
+    const roundedG = Math.round(g);
+    const roundedB = Math.round(b);
+
+    // Handle rgb/rgba format with commas: rgb(1, 2, 3)
+    const rgbCommaRegex =
+        /^rgba?\s*\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(?:\s*,\s*[\d.]+)?\s*\)$/i;
+    if (rgbCommaRegex.test(originalFormat)) {
+        // Extract the format with placeholders for values
+        const formatWithPlaceholders = originalFormat.replace(
+            /^(rgba?\s*\(\s*)[\d.]+(\s*,\s*)[\d.]+(\s*,\s*)[\d.]+(\s*(?:,\s*[\d.]+\s*)?\))$/i,
+            "$1{r}$2{g}$3{b}$4"
+        );
+
+        return formatWithPlaceholders
+            .replace("{r}", roundedR.toString())
+            .replace("{g}", roundedG.toString())
+            .replace("{b}", roundedB.toString());
+    }
+
+    // Handle rgb/rgba format without commas: rgb(1 2 3)
+    // Fixed regex to properly match space-separated values
+    const rgbSpaceRegex =
+        /^rgba?\s*\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s*\)$/i;
+    if (rgbSpaceRegex.test(originalFormat)) {
+        // Reconstruct the format while preserving the exact spacing
+        const formatParts = originalFormat.split(/[\d.]+/);
+        // formatParts will have the parts between numbers, including the opening and closing parts
+        return `${formatParts[0]}${roundedR}${formatParts[1]}${roundedG}${formatParts[2]}${roundedB}${formatParts[3]}`;
+    }
+
+    // For non-rgb format strings, extract the exact delimiters
+    const numberRegex = /([\d.]+)([^0-9.]+|$)([\d.]+)([^0-9.]+|$)([\d.]+)/;
+    const match = originalFormat.match(numberRegex);
+
+    if (match) {
+        // match[2] is the delimiter between first and second number
+        // match[4] is the delimiter between second and third number
+        return `${roundedR}${match[2]}${roundedG}${match[4]}${roundedB}`;
+    }
+
+    // Fallback to standard format if original format can't be determined
+    return `${roundedR}, ${roundedG}, ${roundedB}`;
+};
 
 interface RGBFieldProps
     extends Omit<ComponentProps<typeof TextField.Root>, "onChange" | "value"> {
@@ -92,7 +153,9 @@ const RGBField = ({ value, autoSelect, onChange, ...rest }: RGBFieldProps) => {
     }, [value, tempRgb]);
 
     useEffect(() => {
-        setTempValue(rgbToString(tempRgb));
+        setTempValue(prevValue =>
+            updateRgbPreservingFormat(prevValue, tempRgb)
+        );
     }, [tempRgb]);
 
     return (
