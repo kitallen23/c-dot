@@ -80,9 +80,20 @@ const updateRgbPreservingFormat = (
     const match = originalFormat.match(numberRegex);
 
     if (match) {
-        // match[2] is the delimiter between first and second number
-        // match[4] is the delimiter between second and third number
-        return `${roundedR}${match[2]}${roundedG}${match[4]}${roundedB}`;
+        // Validate that delimiters only contain spaces and commas
+        const delimiter1 = match[2];
+        const delimiter2 = match[4];
+
+        // Check if delimiters contain only valid characters (spaces and commas)
+        const validDelimiterRegex = /^[\s,]*$/;
+        if (
+            validDelimiterRegex.test(delimiter1) &&
+            validDelimiterRegex.test(delimiter2)
+        ) {
+            // match[2] is the delimiter between first and second number
+            // match[4] is the delimiter between second and third number
+            return `${roundedR}${delimiter1}${roundedG}${delimiter2}${roundedB}`;
+        }
     }
 
     // Fallback to standard format if original format can't be determined
@@ -123,7 +134,9 @@ const RGBField = ({ value, autoSelect, onChange, ...rest }: RGBFieldProps) => {
     const handleBlur = () => {
         const isValid = isValidRgbString(tempValue);
         if (!isValid) {
-            setTempValue(rgbToString(tempRgb));
+            setTempValue(prevValue =>
+                updateRgbPreservingFormat(prevValue, tempRgb)
+            );
         }
     };
 
