@@ -31,8 +31,10 @@ export const stringToRgb = (value: string): RGB | null => {
         return null;
     }
 
+    const cleanedColor = value.replace(/^rgba?\s*\(\s*|\s*\)$/gi, "");
+
     // Extract the numeric values
-    const values = value.split(/,\s*|\s+/).map(Number);
+    const values = cleanedColor.split(/,\s*|\s+/).map(Number);
 
     return { r: values[0], g: values[1], b: values[2] };
 };
@@ -43,22 +45,39 @@ export function isValidHexString(color: string): boolean {
 }
 
 export function isValidRgbString(color: string): boolean {
-    // Match patterns like "255, 0, 128", "255,0,128", or "255 0 128"
-    // Each number can have up to 6 decimal places
-    const rgbRegex =
-        /^(\d+(\.\d{1,6})?)(,\s*|\s+)(\d+(\.\d{1,6})?)(,\s*|\s+)(\d+(\.\d{1,6})?)$/;
+    // Trim the input string to handle leading/trailing whitespace
+    const trimmedColor = color.trim();
 
-    if (!rgbRegex.test(color)) {
+    // First check if it's an rgb/rgba format
+    const isRgbFunction = /^rgba?\s*\(/i.test(trimmedColor);
+
+    // Extract all numbers from the string (including negative numbers)
+    const allNumbers = trimmedColor.match(/-?\d+(?:\.\d+)?/g);
+
+    // If we don't have at least 3 numbers, it's not a valid RGB string
+    if (!allNumbers || allNumbers.length < 3) {
         return false;
     }
 
-    // Extract the numeric values
-    const values = color.split(/,\s*|\s+/).map(Number);
+    // Take the first 3 numbers as RGB values
+    const rgbValues = allNumbers.slice(0, 3).map(Number);
 
-    // Ensure we have exactly 3 values and each is between 0 and 255 inclusive
-    return (
-        values.length === 3 && values.every(value => value >= 0 && value <= 255)
-    );
+    // For rgb/rgba function format, verify it has a closing parenthesis
+    if (isRgbFunction && !trimmedColor.includes(")")) {
+        return false;
+    }
+
+    // If it's not an rgb/rgba function, verify the string only contains numbers, spaces, commas, and minus signs
+    if (!isRgbFunction) {
+        // Remove all valid characters and check if anything remains
+        const invalidChars = trimmedColor.replace(/[-\d.,\s]+/g, "");
+        if (invalidChars) {
+            return false;
+        }
+    }
+
+    // Ensure each RGB value is between 0 and 255 inclusive
+    return rgbValues.every(value => value >= 0 && value <= 255);
 }
 
 export function normalizeHexColor(color: string): string {

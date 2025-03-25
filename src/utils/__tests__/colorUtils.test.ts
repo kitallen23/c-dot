@@ -2,6 +2,7 @@ import {
     normalizeHexColor,
     isValidHexString,
     isBrandSafe,
+    isValidRgbString,
 } from "@/utils/colorUtils";
 import { BACKGROUNDS } from "@/utils/constants";
 import { describe, expect, it } from "vitest";
@@ -52,6 +53,117 @@ describe("isValidHexString", () => {
         expect(isValidHexString("")).toBe(false);
         expect(isValidHexString("#")).toBe(false);
         expect(isValidHexString("##123")).toBe(false);
+    });
+});
+
+describe("isValidRgbString", () => {
+    // Valid RGB strings with different formats
+    it("should return true for valid comma-separated RGB values", () => {
+        expect(isValidRgbString("0,0,0")).toBe(true);
+        expect(isValidRgbString("255,255,255")).toBe(true);
+        expect(isValidRgbString("123,45,67")).toBe(true);
+        expect(isValidRgbString("0, 128, 255")).toBe(true);
+        expect(isValidRgbString("255 ,0 ,128")).toBe(true);
+        expect(isValidRgbString("100, 200 ,50")).toBe(true);
+    });
+
+    it("should return true for valid space-separated RGB values", () => {
+        expect(isValidRgbString("0 0 0")).toBe(true);
+        expect(isValidRgbString("255 255 255")).toBe(true);
+        expect(isValidRgbString("123 45 67")).toBe(true);
+    });
+
+    it("should return true for valid mixed-delimiter RGB values", () => {
+        expect(isValidRgbString("0 128,255")).toBe(true);
+        expect(isValidRgbString("255,0 128")).toBe(true);
+        expect(isValidRgbString("100 200,50")).toBe(true);
+    });
+
+    it("should return true for valid rgb() function format", () => {
+        expect(isValidRgbString("rgb(0,0,0)")).toBe(true);
+        expect(isValidRgbString("rgb(255, 255, 255)")).toBe(true);
+        expect(isValidRgbString("rgb(123, 45, 67)")).toBe(true);
+        expect(isValidRgbString("rgb(0 0 0)")).toBe(true);
+        expect(isValidRgbString("rgb(255 255 255)")).toBe(true);
+        expect(isValidRgbString("rgb(0 128,255)")).toBe(true);
+        expect(isValidRgbString("rgb(255,0 128)")).toBe(true);
+        expect(isValidRgbString("RGB(100, 200, 50)")).toBe(true);
+    });
+
+    it("should return true for valid rgba() function format", () => {
+        expect(isValidRgbString("rgba(0,0,0,0)")).toBe(true);
+        expect(isValidRgbString("rgba(255, 255, 255, 1)")).toBe(true);
+        expect(isValidRgbString("rgba(123, 45, 67, 0.5)")).toBe(true);
+        expect(isValidRgbString("rgba(0 0 0 0)")).toBe(true);
+        expect(isValidRgbString("rgba(255 255 255 1)")).toBe(true);
+        expect(isValidRgbString("rgba(0 128,255, 0.7)")).toBe(true);
+        expect(isValidRgbString("rgba(255,0 128 0.3)")).toBe(true);
+        expect(isValidRgbString("RGBA(100, 200, 50, 0.8)")).toBe(true);
+    });
+
+    it("should return true for decimal RGB values within range", () => {
+        expect(isValidRgbString("0.5, 128.75, 255")).toBe(true);
+        expect(isValidRgbString("rgb(0.5 128.75 255)")).toBe(true);
+        expect(isValidRgbString("rgba(0.5, 128.75, 255, 0.5)")).toBe(true);
+    });
+
+    // Invalid RGB strings
+    it("should return false for RGB values out of range", () => {
+        expect(isValidRgbString("-1,0,0")).toBe(false);
+        expect(isValidRgbString("0,-1,0")).toBe(false);
+        expect(isValidRgbString("0,0,-1")).toBe(false);
+        expect(isValidRgbString("256,0,0")).toBe(false);
+        expect(isValidRgbString("0,256,0")).toBe(false);
+        expect(isValidRgbString("0,0,256")).toBe(false);
+        expect(isValidRgbString("rgb(-1,0,0)")).toBe(false);
+        expect(isValidRgbString("rgb(256,0,0)")).toBe(false);
+        expect(isValidRgbString("rgb(255.000001,0,0)")).toBe(false);
+        expect(isValidRgbString("rgba(0,0,256,0.5)")).toBe(false);
+    });
+
+    it("should return false for insufficient number of values", () => {
+        expect(isValidRgbString("0,0")).toBe(false);
+        expect(isValidRgbString("0")).toBe(false);
+        expect(isValidRgbString("rgb(0,0)")).toBe(false);
+        expect(isValidRgbString("rgba(0,0,0)")).toBe(true); // This is valid as we only check the first 3 numbers
+    });
+
+    it("should return false for invalid characters", () => {
+        expect(isValidRgbString("a,b,c")).toBe(false);
+        expect(isValidRgbString("0,b,255")).toBe(false);
+        expect(isValidRgbString("0,128,c")).toBe(false);
+        expect(isValidRgbString("0;128;255")).toBe(false);
+        expect(isValidRgbString("0|128|255")).toBe(false);
+    });
+
+    it("should return false for malformed rgb/rgba functions", () => {
+        expect(isValidRgbString("rgb(0,0,0")).toBe(false);
+        expect(isValidRgbString("rgb 0,0,0)")).toBe(false);
+        expect(isValidRgbString("rgba(0,0,0,0.5")).toBe(false);
+        expect(isValidRgbString("rgbx(0,0,0)")).toBe(false);
+        expect(isValidRgbString("(0,0,0)")).toBe(false);
+    });
+
+    it("should return false for empty or invalid inputs", () => {
+        expect(isValidRgbString("")).toBe(false);
+        expect(isValidRgbString(" ")).toBe(false);
+        expect(isValidRgbString("rgb()")).toBe(false);
+        expect(isValidRgbString("rgba()")).toBe(false);
+        expect(isValidRgbString(",,,")).toBe(false);
+    });
+
+    it("should return false for inputs with too many values", () => {
+        // These should still be valid as we only check the first 3 numbers
+        expect(isValidRgbString("0,0,0,0")).toBe(true);
+        expect(isValidRgbString("0 0 0 0")).toBe(true);
+        expect(isValidRgbString("rgb(0,0,0,0)")).toBe(true);
+    });
+
+    it("should handle whitespace correctly", () => {
+        expect(isValidRgbString("  0,0,0  ")).toBe(true);
+        expect(isValidRgbString("  rgb(0,0,0)  ")).toBe(true);
+        expect(isValidRgbString("0  ,  0  ,  0")).toBe(true);
+        expect(isValidRgbString("rgb(  0  ,  0  ,  0  )")).toBe(true);
     });
 });
 
