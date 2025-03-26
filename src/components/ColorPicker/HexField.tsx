@@ -28,13 +28,21 @@ const HexField = ({ value, autoSelect, onChange, ...rest }: HexFieldProps) => {
 
         const isValid = isValidHexString(tempValue);
         if (isValid) {
-            onChange(tempValue);
+            onChange(tempValue, event);
         }
     };
 
     const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         if (autoSelect) {
             e.target.select();
+        }
+    };
+
+    // On blur, reset our string value if it isn't a valid RGB
+    const handleBlur = () => {
+        const isValid = isValidHexString(tempValue);
+        if (!isValid) {
+            setTempValue(value);
         }
     };
 
@@ -49,6 +57,7 @@ const HexField = ({ value, autoSelect, onChange, ...rest }: HexFieldProps) => {
             value={tempValue}
             onChange={handleChange}
             onFocus={handleFocus}
+            onBlur={handleBlur}
             type="text"
         />
     );
