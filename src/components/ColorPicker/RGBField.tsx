@@ -48,6 +48,12 @@ const updateRgbPreservingFormat = (
     const roundedG = Math.round(g);
     const roundedB = Math.round(b);
 
+    // Only preserve format if the original is valid
+    if (!isValidRgbString(originalFormat)) {
+        // Fall back to standard format for invalid inputs
+        return `${roundedR}, ${roundedG}, ${roundedB}`;
+    }
+
     // Handle rgb/rgba format with commas: rgb(1, 2, 3)
     const rgbCommaRegex =
         /^rgba?\s*\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(?:\s*,\s*[\d.]+)?\s*\)$/i;
@@ -65,7 +71,6 @@ const updateRgbPreservingFormat = (
     }
 
     // Handle rgb/rgba format without commas: rgb(1 2 3)
-    // Fixed regex to properly match space-separated values
     const rgbSpaceRegex =
         /^rgba?\s*\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s*\)$/i;
     if (rgbSpaceRegex.test(originalFormat)) {
@@ -80,20 +85,9 @@ const updateRgbPreservingFormat = (
     const match = originalFormat.match(numberRegex);
 
     if (match) {
-        // Validate that delimiters only contain spaces and commas
-        const delimiter1 = match[2];
-        const delimiter2 = match[4];
-
-        // Check if delimiters contain only valid characters (spaces and commas)
-        const validDelimiterRegex = /^[\s,]*$/;
-        if (
-            validDelimiterRegex.test(delimiter1) &&
-            validDelimiterRegex.test(delimiter2)
-        ) {
-            // match[2] is the delimiter between first and second number
-            // match[4] is the delimiter between second and third number
-            return `${roundedR}${delimiter1}${roundedG}${delimiter2}${roundedB}`;
-        }
+        // match[2] is the delimiter between first and second number
+        // match[4] is the delimiter between second and third number
+        return `${roundedR}${match[2]}${roundedG}${match[4]}${roundedB}`;
     }
 
     // Fallback to standard format if original format can't be determined
@@ -126,7 +120,7 @@ const RGBField = ({ value, autoSelect, onChange, ...rest }: RGBFieldProps) => {
         const isValid = isValidRgbString(tempValue);
         if (isValid) {
             const rgb = stringToRgb(tempValue)!;
-            onChange(rgb);
+            onChange(rgb, event);
         }
     };
 
