@@ -54,32 +54,6 @@ const updateRgbPreservingFormat = (
         return `${roundedR}, ${roundedG}, ${roundedB}`;
     }
 
-    // Handle rgb/rgba format with commas: rgb(1, 2, 3)
-    const rgbCommaRegex =
-        /^rgba?\s*\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(?:\s*,\s*[\d.]+)?\s*\)$/i;
-    if (rgbCommaRegex.test(originalFormat)) {
-        // Extract the format with placeholders for values
-        const formatWithPlaceholders = originalFormat.replace(
-            /^(rgba?\s*\(\s*)[\d.]+(\s*,\s*)[\d.]+(\s*,\s*)[\d.]+(\s*(?:,\s*[\d.]+\s*)?\))$/i,
-            "$1{r}$2{g}$3{b}$4"
-        );
-
-        return formatWithPlaceholders
-            .replace("{r}", roundedR.toString())
-            .replace("{g}", roundedG.toString())
-            .replace("{b}", roundedB.toString());
-    }
-
-    // Handle rgb/rgba format without commas: rgb(1 2 3)
-    const rgbSpaceRegex =
-        /^rgba?\s*\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s+([\d.]+))?\s*\)$/i;
-    if (rgbSpaceRegex.test(originalFormat)) {
-        // Reconstruct the format while preserving the exact spacing
-        const formatParts = originalFormat.split(/[\d.]+/);
-        // formatParts will have the parts between numbers, including the opening and closing parts
-        return `${formatParts[0]}${roundedR}${formatParts[1]}${roundedG}${formatParts[2]}${roundedB}${formatParts[3]}`;
-    }
-
     // For non-rgb format strings, extract the exact delimiters
     const numberRegex = /([\d.]+)([^0-9.]+|$)([\d.]+)([^0-9.]+|$)([\d.]+)/;
     const match = originalFormat.match(numberRegex);
@@ -96,7 +70,7 @@ const updateRgbPreservingFormat = (
 
 interface RGBFieldProps
     extends Omit<ComponentProps<typeof TextField.Root>, "onChange" | "value"> {
-    value: RGB;
+    value: RGB | null;
     autoSelect?: boolean;
     onChange: (value: RGB, event?: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -146,9 +120,9 @@ const RGBField = ({ value, autoSelect, onChange, ...rest }: RGBFieldProps) => {
             // Temp RGB was null, so update it to the external value
             setTempRgb(value);
         } else if (
-            tempRgb.r !== value.r ||
-            tempRgb.g !== value.g ||
-            tempRgb.b !== value.b
+            tempRgb.r !== value?.r ||
+            tempRgb.g !== value?.g ||
+            tempRgb.b !== value?.b
         ) {
             // Temp RGB is different to new value, so update temp RGB to be the
             // new external value
