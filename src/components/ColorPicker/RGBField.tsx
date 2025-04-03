@@ -116,9 +116,12 @@ const RGBField = ({ value, autoSelect, onChange, ...rest }: RGBFieldProps) => {
 
     // Update temp value when external value changes
     useEffect(() => {
-        if (!tempRgb) {
+        if (tempRgb === null) {
             // Temp RGB was null, so update it to the external value
             setTempRgb(value);
+        } else if (value === null) {
+            // Value was null, so reset our value to blank string
+            setTempRgb(null);
         } else if (
             tempRgb.r !== value?.r ||
             tempRgb.g !== value?.g ||
@@ -135,7 +138,9 @@ const RGBField = ({ value, autoSelect, onChange, ...rest }: RGBFieldProps) => {
 
     useEffect(() => {
         setTempValue(prevValue =>
-            updateRgbPreservingFormat(prevValue, tempRgb)
+            tempRgb === null
+                ? ""
+                : updateRgbPreservingFormat(prevValue, tempRgb)
         );
     }, [tempRgb]);
 
