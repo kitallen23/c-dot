@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import RGBField from "@/components/ColorPicker/RGBField";
@@ -373,5 +373,270 @@ describe("RGBField", () => {
         // Blur the input to see it return to its previous value
         await user.tab();
         expect(input).toHaveValue("0, 0, 0");
+    });
+
+    test("handles empty input gracefully", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <RGBField
+                value={{ r: 100, g: 150, b: 200 }}
+                onChange={mockOnChange}
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+
+        // Clear the input
+        await user.clear(input);
+
+        // Check that the input is empty
+        expect(input).toHaveValue("");
+
+        // Verify onChange wasn't called with invalid empty value
+        expect(mockOnChange).not.toHaveBeenCalled();
+
+        // Blur the input
+        await user.tab();
+
+        // Should reset to the last valid value
+        expect(input).toHaveValue("100, 150, 200");
+    });
+
+    test("handles pasting of valid RGB values", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <RGBField value={{ r: 0, g: 0, b: 0 }} onChange={mockOnChange} />
+        );
+
+        const input = screen.getByRole("textbox");
+
+        // Clear the input
+        await user.clear(input);
+
+        // Simulate pasting a valid RGB value
+        // We'll use fireEvent directly since userEvent doesn't have paste
+        const pasteData = "100, 150, 200";
+        const pasteEvent = new Event("paste", { bubbles: true });
+        Object.defineProperty(pasteEvent, "clipboardData", {
+            value: {
+                getData: () => pasteData,
+            },
+        });
+
+        fireEvent(input, pasteEvent);
+
+        // Manually update the input value since fireEvent doesn't do this
+        fireEvent.change(input, { target: { value: pasteData } });
+
+        // Check that the input has the pasted value
+        expect(input).toHaveValue("100, 150, 200");
+
+        // Check that onChange was called with the correct RGB object
+        expect(mockOnChange).toHaveBeenCalledWith(
+            { r: 100, g: 150, b: 200 },
+            expect.anything()
+        );
+    });
+
+    test("handles pasting of invalid RGB values", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <RGBField
+                value={{ r: 100, g: 150, b: 200 }}
+                onChange={mockOnChange}
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+
+        // Clear the input
+        await user.clear(input);
+
+        // Simulate pasting an invalid RGB value
+        const pasteData = "not an rgb value";
+        const pasteEvent = new Event("paste", { bubbles: true });
+        Object.defineProperty(pasteEvent, "clipboardData", {
+            value: {
+                getData: () => pasteData,
+            },
+        });
+
+        fireEvent(input, pasteEvent);
+
+        // Manually update the input value
+        fireEvent.change(input, { target: { value: pasteData } });
+
+        // Check that the input has the pasted value
+        expect(input).toHaveValue("not an rgb value");
+
+        // Check that onChange was not called with the invalid value
+        expect(mockOnChange).not.toHaveBeenCalled();
+
+        // Blur the input
+        await user.tab();
+
+        // Should reset to the last valid value
+        expect(input).toHaveValue("100, 150, 200");
+    });
+
+    test("handles multiple format changes within a single editing session", async () => {
+        const user = userEvent.setup();
+
+        const { rerender } = render(
+            <RGBField
+                value={{ r: 100, g: 150, b: 200 }}
+                onChange={mockOnChange}
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+
+        // Start with default format
+        expect(input).toHaveValue("100, 150, 200");
+
+        // Change to space-only format
+        await user.clear(input);
+        await user.type(input, "50 75 100");
+
+        // Verify the format change and that onChange was called
+        expect(input).toHaveValue("50 75 100");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            { r: 50, g: 75, b: 100 },
+            expect.anything()
+        );
+
+        mockOnChange.mockClear();
+
+        // Change to a mixed format with commas and spaces
+        await user.clear(input);
+        await user.type(input, "25, 30,35");
+
+        // Verify the format change and that onChange was called
+        expect(input).toHaveValue("25, 30,35");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            { r: 25, g: 30, b: 35 },
+            expect.anything()
+        );
+
+        mockOnChange.mockClear();
+
+        // Now update the component with new props
+        rerender(
+            <RGBField value={{ r: 60, g: 70, b: 80 }} onChange={mockOnChange} />
+        );
+
+        // Verify that the new values use the last format pattern
+        expect(input).toHaveValue("60, 70,80");
+    });
+
+    test("works with null initial value", async () => {
+        const user = userEvent.setup();
+
+        // Render with null initial value
+        const { rerender } = render(
+            <RGBField value={null} onChange={mockOnChange} />
+        );
+
+        const input = screen.getByRole("textbox");
+
+        // Input should be empty or have default value
+        expect(input).toHaveValue("");
+
+        // Type a valid RGB value
+        await user.type(input, "100, 150, 200");
+
+        // Check that onChange was called with the correct RGB object
+        expect(mockOnChange).toHaveBeenCalledWith(
+            { r: 100, g: 150, b: 200 },
+            expect.anything()
+        );
+        // Re-render with the newly typed value; this is a chore, it simply sets
+        // up the next section
+        rerender(
+            <RGBField
+                value={{ r: 100, g: 150, b: 200 }}
+                onChange={mockOnChange}
+            />
+        );
+
+        // Now update to null again
+        rerender(<RGBField value={null} onChange={mockOnChange} />);
+
+        // Input should be empty again
+        expect(input).toHaveValue("");
+    });
+
+    test("passes through other TextField props correctly", async () => {
+        // Render with additional TextField props
+        render(
+            <RGBField
+                value={{ r: 100, g: 150, b: 200 }}
+                onChange={mockOnChange}
+                placeholder="Enter RGB values"
+                disabled={true}
+                aria-label="RGB color input"
+                data-testid="rgb-field"
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+
+        // Check that the props were passed through to the TextField
+        expect(input).toHaveAttribute("placeholder", "Enter RGB values");
+        expect(input).toBeDisabled();
+        expect(input).toHaveAttribute("aria-label", "RGB color input");
+        expect(input).toHaveAttribute("data-testid", "rgb-field");
+    });
+
+    test("handles rapid successive external value changes correctly", async () => {
+        // Initial render
+        const { rerender } = render(
+            <RGBField
+                value={{ r: 100, g: 150, b: 200 }}
+                onChange={mockOnChange}
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+        expect(input).toHaveValue("100, 150, 200");
+
+        // Rapid succession of value changes
+        // First update
+        rerender(
+            <RGBField
+                value={{ r: 50, g: 75, b: 100 }}
+                onChange={mockOnChange}
+            />
+        );
+
+        // Second update immediately after
+        rerender(
+            <RGBField value={{ r: 25, g: 50, b: 75 }} onChange={mockOnChange} />
+        );
+
+        // Third update immediately after
+        rerender(
+            <RGBField value={{ r: 10, g: 20, b: 30 }} onChange={mockOnChange} />
+        );
+
+        // Check that the final value is correctly displayed
+        expect(input).toHaveValue("10, 20, 30");
+
+        // Verify onChange wasn't called during these external updates
+        expect(mockOnChange).not.toHaveBeenCalled();
+
+        // Now make a user change to ensure the component is still responsive
+        const user = userEvent.setup();
+        await user.clear(input);
+        await user.type(input, "5, 10, 15");
+
+        // Check that onChange is called for user input
+        expect(mockOnChange).toHaveBeenCalledWith(
+            { r: 5, g: 10, b: 15 },
+            expect.anything()
+        );
     });
 });
