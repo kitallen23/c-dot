@@ -54,25 +54,24 @@ describe("RGBField", () => {
 
     test("does not call onChange with invalid values", async () => {
         const user = userEvent.setup();
-
-        render(
-            <RGBField value={{ r: 0, g: 0, b: 0 }} onChange={mockOnChange} />
-        );
-
+        render(<RGBField value={null} onChange={mockOnChange} />);
         const input = screen.getByRole("textbox");
 
-        // Type an invalid RGB value
-        await user.clear(input);
-        await user.type(input, "invalid");
-
-        expect(input).toHaveValue("invalid");
+        // Test with completely invalid characters
+        await user.type(input, "invalid text");
+        expect(input).toHaveValue("invalid text"); // Input shows what was typed
         expect(mockOnChange).not.toHaveBeenCalled();
 
-        // Type another invalid RGB value
+        // Clear and test with partially valid but incomplete input
         await user.clear(input);
-        await user.type(input, "100, 200, a");
+        await user.type(input, "100, 150, ");
+        expect(input).toHaveValue("100, 150, ");
+        expect(mockOnChange).not.toHaveBeenCalled();
 
-        expect(input).toHaveValue("100, 200, a");
+        // Clear and test with out-of-range values
+        await user.clear(input);
+        await user.type(input, "256, 100, 100");
+        expect(input).toHaveValue("256, 100, 100");
         expect(mockOnChange).not.toHaveBeenCalled();
     });
 
